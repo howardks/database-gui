@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ClubDatabaseGUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "ClubDatabaseGUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

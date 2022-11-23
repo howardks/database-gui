@@ -1,0 +1,25 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<ContentDialog
+    x:Class="ClubDatabaseGUI.ProjectDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ClubDatabaseGUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <RelativePanel>
+        <TextBlock x:Name="pProjectIdTextBlock" Text="ProjectID: " Margin="20"/>
+        <TextBox x:Name="pProjectIdTextBox" Width="200" Margin="4,0,0,0" RelativePanel.RightOf="pProjectIdTextBlock" RelativePanel.AlignVerticalCenterWith="pProjectIdTextBlock" />
+        <TextBlock x:Name="pOrgIdTextBlock" Text="OrgID: " Margin="20,0,0,0" RelativePanel.Below="pProjectIdTextBlock" />
+        <TextBox x:Name="pOrgIdTextBox" Width="200" Margin="4,0,0,0" RelativePanel.AlignHorizontalCenterWith="pProjectIdTextBox" RelativePanel.AlignVerticalCenterWith="pOrgIdTextBlock" />
+        <TextBlock x:Name="pTitleTextBlock" Text="Title: " Margin="20" RelativePanel.Below="pOrgIdTextBlock" />
+        <TextBox x:Name="pTitleTextBox" Width="200" Margin="4,0,0,0" RelativePanel.AlignHorizontalCenterWith="pOrgIdTextBox" RelativePanel.AlignVerticalCenterWith="pTitleTextBlock" />
+        <TextBlock x:Name="pParticipantsTextBlock" Text="Participants: " Margin="20,0,0,0" RelativePanel.Below="pTitleTextBlock" />
+        <TextBox x:Name="pParticipantsTextBox" Width="200" Margin="4,0,0,0" RelativePanel.AlignHorizontalCenterWith="pTitleTextBox" RelativePanel.AlignVerticalCenterWith="pParticipantsTextBlock" />
+        <TextBlock x:Name="pAboutTextBlock" Text="About: " Margin="20" RelativePanel.Below="pParticipantsTextBlock" />
+        <TextBox x:Name="pAboutTextBox" Width="200" Margin="4,0,0,0" RelativePanel.AlignHorizontalCenterWith="pParticipantsTextBox" RelativePanel.AlignVerticalCenterWith="pAboutTextBlock" />
+    </RelativePanel>
+</ContentDialog>

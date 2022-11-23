@@ -1,0 +1,545 @@
+<Window
+    x:Class="ClubDatabaseGUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ClubDatabaseGUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controlsprimitives="using:CommunityToolkit.WinUI.UI.Controls.Primitives">
+
+    <TabView x:Name="tabView" IsAddTabButtonVisible="False" SelectionChanged="TabView_SelectionChanged">
+        <TabViewItem Header="Club" IsClosable="False">
+
+            <SplitView x:Name="clubSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="ACTIONS" HorizontalAlignment="Center" Margin="12" />
+                        <StackPanel Orientation="Vertical" Padding="10" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <Button x:Name="clubAdd" Content="Add" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="clubAdd_Click"/>
+                            <Button x:Name="clubModify" Content="Modify" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="clubModify_Click" />
+                            <Button x:Name="clubDelete" Content="Delete" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="clubDelete_Click" />
+                        </StackPanel>
+                        <RelativePanel>
+                            <TextBlock x:Name="cOrgIdTextBlock" Text="OrgID: " Margin="20"/>
+                            <TextBox x:Name="cOrgIdTextBox" Width="200" Margin="23,0,0,0" RelativePanel.RightOf="cOrgIdTextBlock" RelativePanel.AlignVerticalCenterWith="cOrgIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="cNameTextBlock" Text="Name: " Margin="20,0,0,0" RelativePanel.Below="cOrgIdTextBlock" />
+                            <TextBox x:Name="cNameTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="cOrgIdTextBox" RelativePanel.AlignVerticalCenterWith="cNameTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="cAdvisorIdTextBlock" Text="AdvisorID: " Margin="20" RelativePanel.Below="cNameTextBlock" />
+                            <TextBox x:Name="cAdvisorIdTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="cNameTextBox" RelativePanel.AlignVerticalCenterWith="cAdvisorIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="cAboutTextBlock" Text="About: " Margin="20,0,0,0" RelativePanel.Below="cAdvisorIdTextBlock" />
+                            <TextBox x:Name="cAboutTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="cAdvisorIdTextBox" RelativePanel.AlignVerticalCenterWith="cAboutTextBlock" IsEnabled="False"/>
+                            <Button x:Name="clubSearch" Content="Search" Margin="20" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.Below="cAboutTextBlock" IsEnabled="False" Click="clubSearch_Click"/>
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="CLUB TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="clubDataGrid" >
+                            <controls:DataGrid.Resources>
+                                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                                <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                    <Setter Property="Foreground" Value="#A9936F"/>
+                                    <Setter Property="FontSize" Value="19"/>
+                                </Style>
+                            </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+
+        </TabViewItem>
+        <TabViewItem Header="Student" IsClosable="False">
+
+            <SplitView x:Name="studentSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="ACTIONS" HorizontalAlignment="Center" Margin="12" />
+                        <StackPanel Orientation="Vertical" Padding="10" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <Button x:Name="studentAdd" Content="Add" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="studentAdd_Click" />
+                            <Button x:Name="studentModify" Content="Modify" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="studentModify_Click"/>
+                            <Button x:Name="studentDelete" Content="Delete" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="studentDelete_Click" />
+                        </StackPanel>
+                        <RelativePanel>
+                            <TextBlock x:Name="sFNameTextBlock" Text="FName: " Margin="20"/>
+                            <TextBox x:Name="sFNameTextBox" Width="200" Margin="17,0,0,0" RelativePanel.RightOf="sFNameTextBlock" RelativePanel.AlignVerticalCenterWith="sFNameTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="sMInitTextBlock" Text="MInit: " Margin="20,0,0,0" RelativePanel.Below="sFNameTextBlock" />
+                            <TextBox x:Name="sMInitTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sFNameTextBox" RelativePanel.AlignVerticalCenterWith="sMInitTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="sLNameTextBlock" Text="LName: " Margin="20" RelativePanel.Below="sMInitTextBlock" />
+                            <TextBox x:Name="sLNameTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sMInitTextBox" RelativePanel.AlignVerticalCenterWith="sLNameTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="sEagleIdTextBlock" Text="EagleID: " Margin="20,0,0,0" RelativePanel.Below="sLNameTextBlock" />
+                            <TextBox x:Name="sEagleIdTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sLNameTextBox" RelativePanel.AlignVerticalCenterWith="sEagleIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="sClassTextBlock" Text="Class: " Margin="20" RelativePanel.Below="sEagleIdTextBlock" />
+                            <TextBox x:Name="sClassTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sEagleIdTextBox" RelativePanel.AlignVerticalCenterWith="sClassTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="sPositionTextBlock" Text="Position: " Margin="20,0,0,0" RelativePanel.Below="sClassTextBlock" />
+                            <TextBox x:Name="sPositionTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sClassTextBox" RelativePanel.AlignVerticalCenterWith="sPositionTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="sPhoneTextBlock" Text="Phone: " Margin="20" RelativePanel.Below="sPositionTextBlock" />
+                            <TextBox x:Name="sPhoneTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sPositionTextBox" RelativePanel.AlignVerticalCenterWith="sPhoneTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="sMembershipTextBlock" Text="Membership: " Margin="20,0,0,0" RelativePanel.Below="sPhoneTextBlock" />
+                            <TextBox x:Name="sMembershipTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sPhoneTextBox" RelativePanel.AlignVerticalCenterWith="sMembershipTextBlock" IsEnabled="False"/>
+                            <Button x:Name="studentSearch" Content="Search" Margin="20" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.Below="sMembershipTextBlock" IsEnabled="False" Click="studentSearch_Click"/>
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="STUDENT TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="studentDataGrid" >
+                            <controls:DataGrid.Resources>
+                                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                                <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                    <Setter Property="Foreground" Value="#A9936F"/>
+                                    <Setter Property="FontSize" Value="19"/>
+                                </Style>
+                            </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+
+        </TabViewItem>
+        <TabViewItem Header="Faculty" IsClosable="False">
+
+            <SplitView x:Name="facultSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="ACTIONS" HorizontalAlignment="Center" Margin="12" />
+                        <StackPanel Orientation="Vertical" Padding="10" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <Button x:Name="facultyAdd" Content="Add" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="facultyAdd_Click"/>
+                            <Button x:Name="facultyModify" Content="Modify" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="facultyModify_Click"/>
+                            <Button x:Name="facultyDelete" Content="Delete" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="facultyDelete_Click"/>
+                        </StackPanel>
+                        <RelativePanel>
+                            <TextBlock x:Name="fFNameTextBlock" Text="FName: " Margin="20"/>
+                            <TextBox x:Name="fFNameTextBox" Width="200" Margin="17,0,0,0" RelativePanel.RightOf="fFNameTextBlock" RelativePanel.AlignVerticalCenterWith="fFNameTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="fLNameTextBlock" Text="LName: " Margin="20,0,0,0" RelativePanel.Below="fFNameTextBlock" />
+                            <TextBox x:Name="fLNameTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fFNameTextBox" RelativePanel.AlignVerticalCenterWith="fLNameTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="fEagleIdTextBlock" Text="EagleID: " Margin="20" RelativePanel.Below="fLNameTextBlock" />
+                            <TextBox x:Name="fEagleIdTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fLNameTextBox" RelativePanel.AlignVerticalCenterWith="fEagleIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="fDeptTextBlock" Text="Dept: " Margin="20,0,0,0" RelativePanel.Below="fEagleIdTextBlock" />
+                            <TextBox x:Name="fDeptTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fEagleIdTextBox" RelativePanel.AlignVerticalCenterWith="fDeptTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="fPhoneTextBlock" Text="Phone: " Margin="20" RelativePanel.Below="fDeptTextBlock" />
+                            <TextBox x:Name="fPhoneTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fDeptTextBox" RelativePanel.AlignVerticalCenterWith="fPhoneTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="fOfficeTextBlock" Text="Office: " Margin="20,0,0,0" RelativePanel.Below="fPhoneTextBlock" />
+                            <TextBox x:Name="fOfficeTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fPhoneTextBox" RelativePanel.AlignVerticalCenterWith="fOfficeTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="fEmailTextBlock" Text="Email: " Margin="20" RelativePanel.Below="fOfficeTextBlock" />
+                            <TextBox x:Name="fEmailTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fOfficeTextBox" RelativePanel.AlignVerticalCenterWith="fEmailTextBlock" IsEnabled="False"/>
+                            <Button x:Name="facultySearch" Content="Search" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.Below="fEmailTextBlock" IsEnabled="False" Click="facultySearch_Click"/>
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="FACULTY TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="facultyDataGrid" >
+                            <controls:DataGrid.Resources>
+                                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                                <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                    <Setter Property="Foreground" Value="#A9936F"/>
+                                    <Setter Property="FontSize" Value="19"/>
+                                </Style>
+                            </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+
+        </TabViewItem>
+        <TabViewItem Header="Department" IsClosable="False">
+
+            <SplitView x:Name="departmentSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="ACTIONS" HorizontalAlignment="Center" Margin="12" />
+                        <StackPanel Orientation="Vertical" Padding="10" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <Button x:Name="departmentAdd" Content="Add" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="departmentAdd_Click"/>
+                            <Button x:Name="departmentModify" Content="Modify" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="departmentModify_Click"/>
+                            <Button x:Name="departmentDelete" Content="Delete" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="departmentDelete_Click"/>
+                        </StackPanel>
+                        <RelativePanel>
+                            <TextBlock x:Name="dNameTextBlock" Text="Name: " Margin="20"/>
+                            <TextBox x:Name="dNameTextBox" Width="200" Margin="23,0,0,0" RelativePanel.RightOf="dNameTextBlock" RelativePanel.AlignVerticalCenterWith="dNameTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="dOfficeTextBlock" Text="Office: " Margin="20,0,0,0" RelativePanel.Below="dNameTextBlock" />
+                            <TextBox x:Name="dOfficeTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="dNameTextBox" RelativePanel.AlignVerticalCenterWith="dOfficeTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="dPhoneTextBlock" Text="Phone: " Margin="20" RelativePanel.Below="dOfficeTextBlock" />
+                            <TextBox x:Name="dPhoneTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="dOfficeTextBox" RelativePanel.AlignVerticalCenterWith="dPhoneTextBlock" IsEnabled="False"/>
+                            <Button x:Name="departmentSearch" Content="Search" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.Below="dPhoneTextBlock" IsEnabled="False" Click="departmentSearch_Click"/>
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="DEPARTMENT TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="departmentDataGrid" >
+                            <controls:DataGrid.Resources>
+                                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                                <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                    <Setter Property="Foreground" Value="#A9936F"/>
+                                    <Setter Property="FontSize" Value="19"/>
+                                </Style>
+                            </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+
+        </TabViewItem>
+        <TabViewItem Header="Club_Event" IsClosable="False">
+
+            <SplitView x:Name="clubEventSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="ACTIONS" HorizontalAlignment="Center" Margin="12" />
+                        <StackPanel Orientation="Vertical" Padding="10" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <Button x:Name="clubEventAdd" Content="Add" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="clubEventAdd_Click"/>
+                            <Button x:Name="clubEventModify" Content="Modify" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="clubEventModify_Click"/>
+                            <Button x:Name="clubEventDelete" Content="Delete" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="clubEventDelete_Click"/>
+                        </StackPanel>
+                        <RelativePanel>
+                            <TextBlock x:Name="ceEventIdTextBlock" Text="EventID: " Margin="20"/>
+                            <TextBox x:Name="ceEventIdTextBox" Width="200" Margin="13,0,0,0" RelativePanel.RightOf="ceEventIdTextBlock" RelativePanel.AlignVerticalCenterWith="ceEventIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="ceHostingOrgIdTextBlock" Text="HostingOrg: " Margin="20,0,0,0" RelativePanel.Below="ceEventIdTextBlock" />
+                            <TextBox x:Name="ceHostingOrgIdTextBox" Width="200" Margin="13,0,0,0" RelativePanel.AlignHorizontalCenterWith="ceEventIdTextBox" RelativePanel.AlignVerticalCenterWith="ceHostingOrgIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="ceDateTextBlock" Text="Date: " Margin="20" RelativePanel.Below="ceHostingOrgIdTextBlock" />
+                            <TextBox x:Name="ceDateTextBox" Width="200" Margin="13,0,0,0" RelativePanel.AlignHorizontalCenterWith="ceHostingOrgIdTextBox" RelativePanel.AlignVerticalCenterWith="ceDateTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="ceLocationTextBlock" Text="Location: " Margin="20,0,0,0" RelativePanel.Below="ceDateTextBlock" />
+                            <TextBox x:Name="ceLocationTextBox" Width="200" Margin="13,0,0,0" RelativePanel.AlignHorizontalCenterWith="ceDateTextBox" RelativePanel.AlignVerticalCenterWith="ceLocationTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="ceAboutTextBlock" Text="About: " Margin="20" RelativePanel.Below="ceLocationTextBlock" />
+                            <TextBox x:Name="ceAboutTextBox" Width="200" Margin="13,0,0,0" RelativePanel.AlignHorizontalCenterWith="ceLocationTextBox" RelativePanel.AlignVerticalCenterWith="ceAboutTextBlock" IsEnabled="False"/>
+                            <Button x:Name="clubEventSearch" Content="Search" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.Below="ceAboutTextBlock" IsEnabled="False" Click="clubEventSearch_Click"/>
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="CLUB_EVENT TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="clubEventDataGrid" >
+                            <controls:DataGrid.Resources>
+                                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                                <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                    <Setter Property="Foreground" Value="#A9936F"/>
+                                    <Setter Property="FontSize" Value="19"/>
+                                </Style>
+                            </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+
+        </TabViewItem>
+        <TabViewItem Header="Wings_Points_Event" IsClosable="False">
+
+            <SplitView x:Name="wingsPointsEventSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="ACTIONS" HorizontalAlignment="Center" Margin="12" />
+                        <StackPanel Orientation="Vertical" Padding="10" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <Button x:Name="wingsPointsEventAdd" Content="Add" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="wingsPointsEventAdd_Click"/>
+                            <Button x:Name="wingsPointsEventModify" Content="Modify" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="wingsPointsEventModify_Click"/>
+                            <Button x:Name="wingsPointsEventDelete" Content="Delete" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="wingsPointsEventDelete_Click"/>
+                        </StackPanel>
+                        <RelativePanel>
+                            <TextBlock x:Name="wTitleTextBlock" Text="Title: " Margin="20"/>
+                            <TextBox x:Name="wTitleTextBox" Width="200" Margin="34,0,0,0" RelativePanel.RightOf="wTitleTextBlock" RelativePanel.AlignVerticalCenterWith="wTitleTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="wHostingOrgIdTextBlock" Text="HostingOrg: " Margin="20,0,0,0" RelativePanel.Below="wTitleTextBlock" />
+                            <TextBox x:Name="wHostingOrgIdTextBox" Width="200" Margin="34,0,0,0" RelativePanel.AlignHorizontalCenterWith="wTitleTextBox" RelativePanel.AlignVerticalCenterWith="wHostingOrgIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="wValueTextBlock" Text="Value: " Margin="20" RelativePanel.Below="wHostingOrgIdTextBlock" />
+                            <TextBox x:Name="wValueTextBox" Width="200" Margin="34,0,0,0" RelativePanel.AlignHorizontalCenterWith="wHostingOrgIdTextBox" RelativePanel.AlignVerticalCenterWith="wValueTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="wDateTextBlock" Text="Date: " Margin="20,0,0,0" RelativePanel.Below="wValueTextBlock" />
+                            <TextBox x:Name="wDateTextBox" Width="200" Margin="34,0,0,0" RelativePanel.AlignHorizontalCenterWith="wValueTextBox" RelativePanel.AlignVerticalCenterWith="wDateTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="wLocationTextBlock" Text="Location: " Margin="20" RelativePanel.Below="wDateTextBlock" />
+                            <TextBox x:Name="wLocationTextBox" Width="200" Margin="34,0,0,0" RelativePanel.AlignHorizontalCenterWith="wDateTextBox" RelativePanel.AlignVerticalCenterWith="wLocationTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="wAboutTextBlock" Text="About: " Margin="20,0,0,0" RelativePanel.Below="wLocationTextBlock" />
+                            <TextBox x:Name="wAboutTextBox" Width="200" Margin="34,0,0,0" RelativePanel.AlignHorizontalCenterWith="wLocationTextBox" RelativePanel.AlignVerticalCenterWith="wAboutTextBlock" IsEnabled="False"/>
+                            <Button x:Name="wingsPointsEventSearch" Content="Search" Margin="20" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.Below="wAboutTextBlock" IsEnabled="False" Click="wingsPointsEventSearch_Click"/>
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="WINGS_POINTS_EVENT TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="wingsPointsEventDataGrid" >
+                            <controls:DataGrid.Resources>
+                                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                                <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                    <Setter Property="Foreground" Value="#A9936F"/>
+                                    <Setter Property="FontSize" Value="19"/>
+                                </Style>
+                            </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+
+        </TabViewItem>
+        <TabViewItem Header="Bookable_Location" IsClosable="False">
+
+            <SplitView x:Name="bookableLocationSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="ACTIONS" HorizontalAlignment="Center" Margin="12" />
+                        <StackPanel Orientation="Vertical" Padding="10" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <Button x:Name="bookableLocationAdd" Content="Add" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="bookableLocationAdd_Click"/>
+                            <Button x:Name="bookableLocationModify" Content="Modify" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="bookableLocationModify_Click"/>
+                            <Button x:Name="bookableLocationDelete" Content="Delete" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="bookableLocationDelete_Click"/>
+                        </StackPanel>
+                        <RelativePanel>
+                            <TextBlock x:Name="blCampusTextBlock" Text="Campus: " Margin="20"/>
+                            <TextBox x:Name="blCampusTextBox" Width="200" Margin="11,0,0,0" RelativePanel.RightOf="blCampusTextBlock" RelativePanel.AlignVerticalCenterWith="blCampusTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="blLocationTextBlock" Text="Location: " Margin="20,0,0,0" RelativePanel.Below="blCampusTextBlock" />
+                            <TextBox x:Name="blLocationTextBox" Width="200" Margin="11,0,0,0" RelativePanel.AlignHorizontalCenterWith="blCampusTextBox" RelativePanel.AlignVerticalCenterWith="blLocationTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="blTypeTextBlock" Text="Type: " Margin="20" RelativePanel.Below="blLocationTextBlock" />
+                            <TextBox x:Name="blTypeTextBox" Width="200" Margin="11,0,0,0" RelativePanel.AlignHorizontalCenterWith="blLocationTextBox" RelativePanel.AlignVerticalCenterWith="blTypeTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="blCapacityTextBlock" Text="Capacity: " Margin="20,0,0,0" RelativePanel.Below="blTypeTextBlock" />
+                            <TextBox x:Name="blCapacityTextBox" Width="200" Margin="11,0,0,0" RelativePanel.AlignHorizontalCenterWith="blTypeTextBox" RelativePanel.AlignVerticalCenterWith="blCapacityTextBlock" IsEnabled="False"/>
+                            <Button x:Name="bookableLocationSearch" Content="Search" Margin="20" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.Below="blCapacityTextBlock" IsEnabled="False" Click="bookableLocationSearch_Click"/>
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="BOOKABLE_LOCATION TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="bookableLocationDataGrid" >
+                            <controls:DataGrid.Resources>
+                                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                                <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                    <Setter Property="Foreground" Value="#A9936F"/>
+                                    <Setter Property="FontSize" Value="19"/>
+                                </Style>
+                            </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+
+        </TabViewItem>
+        <TabViewItem Header="Budget" IsClosable="False">
+
+            <SplitView x:Name="budgetSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="ACTIONS" HorizontalAlignment="Center" Margin="12" />
+                        <StackPanel Orientation="Vertical" Padding="10" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <Button x:Name="budgetAdd" Content="Add" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="budgetAdd_Click"/>
+                            <Button x:Name="budgetModify" Content="Modify" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="budgetModify_Click"/>
+                            <Button x:Name="budgetDelete" Content="Delete" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="budgetDelete_Click"/>
+                        </StackPanel>
+                        <RelativePanel>
+                            <TextBlock x:Name="bOrgIdTextBlock" Text="OrgID: " Margin="20"/>
+                            <TextBox x:Name="bOrgIdTextBox" Width="200" Margin="23,0,0,0" RelativePanel.RightOf="bOrgIdTextBlock" RelativePanel.AlignVerticalCenterWith="bOrgIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="bFeeTextBlock" Text="Fee: " Margin="20,0,0,0" RelativePanel.Below="bOrgIdTextBlock" />
+                            <TextBox x:Name="bFeeTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="bOrgIdTextBox" RelativePanel.AlignVerticalCenterWith="bFeeTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="bIncomeTextBlock" Text="Income: " Margin="20" RelativePanel.Below="bFeeTextBlock" />
+                            <TextBox x:Name="bIncomeTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="bFeeTextBox" RelativePanel.AlignVerticalCenterWith="bIncomeTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="bExpensesTextBlock" Text="Expenses: " Margin="20,0,0,0" RelativePanel.Below="bIncomeTextBlock" />
+                            <TextBox x:Name="bExpensesTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="bIncomeTextBox" RelativePanel.AlignVerticalCenterWith="bExpensesTextBlock" IsEnabled="False"/>
+                            <Button x:Name="budgetSearch" Content="Search" Margin="20" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.Below="bExpensesTextBlock" IsEnabled="False" Click="budgetSearch_Click"/>
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="BUDGET TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="budgetDataGrid" >
+                            <controls:DataGrid.Resources>
+                                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                                <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                    <Setter Property="Foreground" Value="#A9936F"/>
+                                    <Setter Property="FontSize" Value="19"/>
+                                </Style>
+                            </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+
+        </TabViewItem>
+        <TabViewItem Header="Project" IsClosable="False">
+
+            <SplitView x:Name="projectSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="ACTIONS" HorizontalAlignment="Center" Margin="12" />
+                        <StackPanel Orientation="Vertical" Padding="10" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <Button x:Name="projectAdd" Content="Add" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="projectAdd_Click"/>
+                            <Button x:Name="projectModify" Content="Modify" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="projectModify_Click"/>
+                            <Button x:Name="projectDelete" Content="Delete" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="projectDelete_Click"/>
+                        </StackPanel>
+                        <RelativePanel>
+                            <TextBlock x:Name="pProjectIdTextBlock" Text="ProjectID: " Margin="20"/>
+                            <TextBox x:Name="pProjectIdTextBox" Width="200" Margin="4,0,0,0" RelativePanel.RightOf="pProjectIdTextBlock" RelativePanel.AlignVerticalCenterWith="pProjectIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="pOrgIdTextBlock" Text="OrgID: " Margin="20,0,0,0" RelativePanel.Below="pProjectIdTextBlock" />
+                            <TextBox x:Name="pOrgIdTextBox" Width="200" Margin="4,0,0,0" RelativePanel.AlignHorizontalCenterWith="pProjectIdTextBox" RelativePanel.AlignVerticalCenterWith="pOrgIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="pTitleTextBlock" Text="Title: " Margin="20" RelativePanel.Below="pOrgIdTextBlock" />
+                            <TextBox x:Name="pTitleTextBox" Width="200" Margin="4,0,0,0" RelativePanel.AlignHorizontalCenterWith="pOrgIdTextBox" RelativePanel.AlignVerticalCenterWith="pTitleTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="pParticipantsTextBlock" Text="Participants: " Margin="20,0,0,0" RelativePanel.Below="pTitleTextBlock" />
+                            <TextBox x:Name="pParticipantsTextBox" Width="200" Margin="4,0,0,0" RelativePanel.AlignHorizontalCenterWith="pTitleTextBox" RelativePanel.AlignVerticalCenterWith="pParticipantsTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="pAboutTextBlock" Text="About: " Margin="20" RelativePanel.Below="pParticipantsTextBlock" />
+                            <TextBox x:Name="pAboutTextBox" Width="200" Margin="4,0,0,0" RelativePanel.AlignHorizontalCenterWith="pParticipantsTextBox" RelativePanel.AlignVerticalCenterWith="pAboutTextBlock" IsEnabled="False"/>
+                            <Button x:Name="projectSearch" Content="Search" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.Below="pAboutTextBlock" IsEnabled="False" Click="projectSearch_Click"/>
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="PROJECT TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="projectDataGrid" >
+                            <controls:DataGrid.Resources>
+                                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                                <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                    <Setter Property="Foreground" Value="#A9936F"/>
+                                    <Setter Property="FontSize" Value="19"/>
+                                </Style>
+                            </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+
+        </TabViewItem>
+        <TabViewItem Header="Social_Media" IsClosable="False">
+
+            <SplitView x:Name="socialMediaSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="ACTIONS" HorizontalAlignment="Center" Margin="12" />
+                        <StackPanel Orientation="Vertical" Padding="10" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <Button x:Name="socialMediaAdd" Content="Add" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="socialMediaAdd_Click"/>
+                            <Button x:Name="socialMediaModify" Content="Modify" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="socialMediaModify_Click"/>
+                            <Button x:Name="socialMediaDelete" Content="Delete" HorizontalAlignment="Center" Margin="5" IsEnabled="False" Click="socialMediaDelete_Click"/>
+                        </StackPanel>
+                        <RelativePanel>
+                            <TextBlock x:Name="smOrgIdTextBlock" Text="OrgID: " Margin="20"/>
+                            <TextBox x:Name="smOrgIdTextBox" Width="200" Margin="23,0,0,0" RelativePanel.RightOf="smOrgIdTextBlock" RelativePanel.AlignVerticalCenterWith="smOrgIdTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="smUrlTextBlock" Text="URL: " Margin="20,0,0,0" RelativePanel.Below="smOrgIdTextBlock" />
+                            <TextBox x:Name="smUrlTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="smOrgIdTextBox" RelativePanel.AlignVerticalCenterWith="smUrlTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="smUsernameTextBlock" Text="Username: " Margin="20" RelativePanel.Below="smUrlTextBlock" />
+                            <TextBox x:Name="smUsernameTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="smUrlTextBox" RelativePanel.AlignVerticalCenterWith="smUsernameTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="smPostNumTextBlock" Text="Post Num: " Margin="20,0,0,0" RelativePanel.Below="smUsernameTextBlock" />
+                            <TextBox x:Name="smPostNumTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="smUsernameTextBox" RelativePanel.AlignVerticalCenterWith="smPostNumTextBlock" IsEnabled="False"/>
+                            <TextBlock x:Name="smViewNumTextBlock" Text="View Num: " Margin="20" RelativePanel.Below="smPostNumTextBlock" />
+                            <TextBox x:Name="smViewNumTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="smPostNumTextBox" RelativePanel.AlignVerticalCenterWith="smViewNumTextBlock" IsEnabled="False"/>
+                            <Button x:Name="socialMediaSearch" Content="Search" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.Below="smViewNumTextBlock" IsEnabled="False" Click="socialMediaSearch_Click"/>
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="SOCIAL_MEDIA TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="socialMediaDataGrid" >
+                            <controls:DataGrid.Resources>
+                                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                                <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                    <Setter Property="Foreground" Value="#A9936F"/>
+                                    <Setter Property="FontSize" Value="19"/>
+                                </Style>
+                            </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+
+        </TabViewItem>
+        <TabViewItem Header="Details" IsClosable="False">
+
+            <SplitView x:Name="commonSplitView" IsPaneOpen="True" DisplayMode="Inline" Background="#011E41" Height="820">
+                <SplitView.Pane>
+                    <StackPanel Orientation="Vertical" Background="#122F52" BorderBrush="#87714D" BorderThickness="0,2,2,0">
+                        <TextBlock Text="CLUB DETAILS" HorizontalAlignment="Center" Margin="12" />
+                        <RelativePanel Padding="20" BorderBrush="#87714D" BorderThickness="0,2,0,2">
+                            <SplitButton x:Name="commonSplitButton" Content="Select A Club" RelativePanel.AlignVerticalCenterWithPanel="True" Width="140" BorderBrush="#87714D" BorderThickness="2" IsEnabled="False">
+                                <SplitButton.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <ListBox x:Name="clubListBox" SelectionChanged="clubListBox_SelectionChanged" Width="400" Background="Transparent" >
+                                            <x:String>Association for Computing Machinery</x:String>
+                                            <x:String>Association for Information Technology Professionals</x:String>
+                                            <x:String>American Society of Mechanical Engineering</x:String>
+                                            <x:String>Aurora Game Development Club</x:String>
+                                            <x:String>Institute of Electrical and Electronic Engineers</x:String>
+                                            <x:String>Robotics Club</x:String>
+                                            <x:String>Women in Technology</x:String>
+                                            <x:String>Tech Developers Association</x:String>
+                                            <x:String>American Society of Civil Engineers</x:String>
+                                            <x:String>Society of Women Engineers</x:String>
+                                        </ListBox>
+                                    </Flyout>
+                                </SplitButton.Flyout>
+                            </SplitButton>
+                            <Button x:Name="advisorButton" Content="Org Advisor" Width="110" Margin="20,60,0,6" RelativePanel.RightOf="commonSplitButton" Click="advisorButton_Click" IsEnabled="False" />
+                            <Button x:Name="rosterButton" Content="Org Roster" Width="110" Margin="20,6,0,6" RelativePanel.Below="advisorButton" RelativePanel.AlignHorizontalCenterWith="advisorButton" Click="rosterButton_Click" IsEnabled="False" />
+                            <Button x:Name="projectButton" Content="Org Projects" Width="110" Margin="20,6,0,6" RelativePanel.Below="rosterButton" RelativePanel.AlignHorizontalCenterWith="advisorButton" Click="projectButton_Click" IsEnabled="False" />
+                            <Button x:Name="budgetButton" Content="Org Budget" Width="110" Margin="20,6,0,6" RelativePanel.Below="projectButton" RelativePanel.AlignHorizontalCenterWith="advisorButton" Click="budgetButton_Click" IsEnabled="False" />
+                            <Button x:Name="eventButton" Content="Org Events" Width="110" Margin="20,6,0,60" RelativePanel.Below="budgetButton" RelativePanel.AlignHorizontalCenterWith="advisorButton" Click="eventButton_Click" IsEnabled="False" />
+                        </RelativePanel>
+                    </StackPanel>
+                </SplitView.Pane>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock x:Name="commonTextBlock" Text="DETAIL TABLE" HorizontalAlignment="Center" Margin="18" />
+                    <ScrollViewer Width="1200" Height="710" Margin="0,0,0,30" BorderBrush="#87714D" BorderThickness="2" ZoomMode="Enabled" IsTabStop="True" IsVerticalScrollChainingEnabled="True" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                        <controls:DataGrid x:Name="commonDataGrid" >
+                        <controls:DataGrid.Resources>
+                            <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor"/>
+
+                            <Style TargetType="controlsprimitives:DataGridColumnHeader">
+                                <Setter Property="Foreground" Value="#A9936F"/>
+                                <Setter Property="FontSize" Value="19"/>
+                            </Style>
+                        </controls:DataGrid.Resources>
+                        </controls:DataGrid>
+                    </ScrollViewer>
+                </StackPanel>
+            </SplitView>
+        </TabViewItem>
+
+        <TabView.TabStripFooter>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="loginButton" Content="Login" Margin="0,0,5,0">
+                    <Button.Flyout>
+                        <Flyout>
+                            <RelativePanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="usernameBlock"  Text="Username: " Margin="12"/>
+                                <TextBox x:Name="usernameBox" Width="200" Margin="0,0,12,0" RelativePanel.RightOf="usernameBlock" RelativePanel.AlignVerticalCenterWith="usernameBlock" BorderBrush="#87714D" BorderThickness="1" KeyUp="login_KeyUp"/>
+                                <TextBlock x:Name="passwordBlock" Text="Password: " Margin="12" RelativePanel.Below="usernameBlock" RelativePanel.AlignLeftWith="usernameBlock" />
+                                <TextBox x:Name="passwordBox" Width="200" Margin="0,0,12,0" RelativePanel.RightOf="passwordBlock" RelativePanel.AlignHorizontalCenterWith="usernameBox" RelativePanel.AlignVerticalCenterWith="passwordBlock" BorderBrush="#87714D" BorderThickness="1" KeyUp="login_KeyUp"/>
+                                <Button x:Name="loginButton1" Content="Login" Click="loginButton1_Click" RelativePanel.AlignHorizontalCenterWithPanel="True" Margin="12" RelativePanel.Below="passwordBox" BorderBrush="#87714D" BorderThickness="1"/>
+                            </RelativePanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <Button x:Name="logoutButton" Content="Logout" IsEnabled="False" Margin="0,0,10,0">
+                    <Button.Flyout>
+                        <Flyout>
+                            <StackPanel>
+                                <TextBlock Text="Confirm logout?" Margin="0,0,0,12" />
+                                <Button x:Name="logoutButton1" Content="Logout" HorizontalAlignment="Center" Click="logoutButton1_Click" BorderBrush="#87714D" BorderThickness="1"/>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
+        </TabView.TabStripFooter>
+    </TabView>
+
+</Window>

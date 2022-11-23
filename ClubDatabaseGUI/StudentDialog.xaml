@@ -1,0 +1,31 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<ContentDialog
+    x:Class="ClubDatabaseGUI.StudentDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ClubDatabaseGUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <RelativePanel>
+        <TextBlock x:Name="sFNameTextBlock" Text="FName: " Margin="20"/>
+        <TextBox x:Name="sFNameTextBox" Width="200" Margin="17,0,0,0" RelativePanel.RightOf="sFNameTextBlock" RelativePanel.AlignVerticalCenterWith="sFNameTextBlock" />
+        <TextBlock x:Name="sMInitTextBlock" Text="MInit: " Margin="20,0,0,0" RelativePanel.Below="sFNameTextBlock" />
+        <TextBox x:Name="sMInitTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sFNameTextBox" RelativePanel.AlignVerticalCenterWith="sMInitTextBlock" />
+        <TextBlock x:Name="sLNameTextBlock" Text="LName: " Margin="20" RelativePanel.Below="sMInitTextBlock" />
+        <TextBox x:Name="sLNameTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sMInitTextBox" RelativePanel.AlignVerticalCenterWith="sLNameTextBlock" />
+        <TextBlock x:Name="sEagleIdTextBlock" Text="EagleID: " Margin="20,0,0,0" RelativePanel.Below="sLNameTextBlock" />
+        <TextBox x:Name="sEagleIdTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sLNameTextBox" RelativePanel.AlignVerticalCenterWith="sEagleIdTextBlock" />
+        <TextBlock x:Name="sClassTextBlock" Text="Class: " Margin="20" RelativePanel.Below="sEagleIdTextBlock" />
+        <TextBox x:Name="sClassTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sEagleIdTextBox" RelativePanel.AlignVerticalCenterWith="sClassTextBlock" />
+        <TextBlock x:Name="sPositionTextBlock" Text="Position: " Margin="20,0,0,0" RelativePanel.Below="sClassTextBlock" />
+        <TextBox x:Name="sPositionTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sClassTextBox" RelativePanel.AlignVerticalCenterWith="sPositionTextBlock" />
+        <TextBlock x:Name="sPhoneTextBlock" Text="Phone: " Margin="20" RelativePanel.Below="sPositionTextBlock" />
+        <TextBox x:Name="sPhoneTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sPositionTextBox" RelativePanel.AlignVerticalCenterWith="sPhoneTextBlock" />
+        <TextBlock x:Name="sMembershipTextBlock" Text="Membership: " Margin="20,0,0,0" RelativePanel.Below="sPhoneTextBlock" />
+        <TextBox x:Name="sMembershipTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="sPhoneTextBox" RelativePanel.AlignVerticalCenterWith="sMembershipTextBlock" />
+    </RelativePanel>
+</ContentDialog>

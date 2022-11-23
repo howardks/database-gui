@@ -1,0 +1,46 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<ContentDialog
+    x:Class="ClubDatabaseGUI.WingsPointsEventDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ClubDatabaseGUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <RelativePanel>
+        <TextBlock x:Name="wTitleTextBlock" Text="Title: " Margin="20"/>
+        <TextBox x:Name="wTitleTextBox" Width="200" Margin="34,0,0,0" RelativePanel.RightOf="wTitleTextBlock" RelativePanel.AlignVerticalCenterWith="wTitleTextBlock" />
+        <TextBlock x:Name="wHostingOrgIdTextBlock" Text="HostingOrg: " Margin="20,0,0,0" RelativePanel.Below="wTitleTextBlock" />
+        <TextBox x:Name="wHostingOrgIdTextBox" Width="200" Margin="34,0,0,0" RelativePanel.AlignHorizontalCenterWith="wTitleTextBox" RelativePanel.AlignVerticalCenterWith="wHostingOrgIdTextBlock" />
+        <TextBlock x:Name="wValueTextBlock" Text="Value: " Margin="20" RelativePanel.Below="wHostingOrgIdTextBlock" />
+        <TextBox x:Name="wValueTextBox" Width="200" Margin="34,0,0,0" RelativePanel.AlignHorizontalCenterWith="wHostingOrgIdTextBox" RelativePanel.AlignVerticalCenterWith="wValueTextBlock" />
+        <TextBlock x:Name="wDateTextBlock" Text="Date: " Margin="20,0,0,0" RelativePanel.Below="wValueTextBlock" />
+
+        <Button x:Name="wDatePicker" Content="Choose A Date/Time" Margin="34,0,0,0" Width="200" RelativePanel.AlignLeftWith="wValueTextBox" RelativePanel.AlignVerticalCenterWith="wDateTextBlock" RelativePanel.RightOf="wDateTextBlock">
+            <Button.Flyout>
+                <Flyout x:Name="wDateFlyout" Closing="wDateFlyout_Closing">
+                    <Flyout.FlyoutPresenterStyle>
+                        <Style TargetType="FlyoutPresenter">
+                            <Setter Property="MinWidth" Value="300" />
+                            <Setter Property="MinHeight" Value="100" />
+                            <Setter Property="BorderBrush" Value="#877D41"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                        </Style>
+                    </Flyout.FlyoutPresenterStyle>
+                    <StackPanel Orientation="Vertical" >
+                        <DatePicker x:Name="wDate" Margin="10" HorizontalAlignment="Center" />
+                        <TimePicker x:Name="wTime" Margin="10" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Flyout>
+            </Button.Flyout>
+        </Button>
+
+        <TextBlock x:Name="wLocationTextBlock" Text="Location: " Margin="20" RelativePanel.Below="wDateTextBlock" />
+        <TextBox x:Name="wLocationTextBox" Width="200" Margin="34,0,0,0" RelativePanel.AlignHorizontalCenterWith="wHostingOrgIdTextBox" RelativePanel.AlignVerticalCenterWith="wLocationTextBlock" />
+        <TextBlock x:Name="wAboutTextBlock" Text="About: " Margin="20,0,0,0" RelativePanel.Below="wLocationTextBlock" />
+        <TextBox x:Name="wAboutTextBox" Width="200" Margin="34,0,0,0" RelativePanel.AlignHorizontalCenterWith="wLocationTextBox" RelativePanel.AlignVerticalCenterWith="wAboutTextBlock" />
+    </RelativePanel>
+</ContentDialog>

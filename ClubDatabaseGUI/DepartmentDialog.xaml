@@ -1,0 +1,21 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<ContentDialog
+    x:Class="ClubDatabaseGUI.DepartmentDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ClubDatabaseGUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <RelativePanel>
+        <TextBlock x:Name="dNameTextBlock" Text="Name: " Margin="20"/>
+        <TextBox x:Name="dNameTextBox" Width="200" Margin="23,0,0,0" RelativePanel.RightOf="dNameTextBlock" RelativePanel.AlignVerticalCenterWith="dNameTextBlock" />
+        <TextBlock x:Name="dOfficeTextBlock" Text="Office: " Margin="20,0,0,0" RelativePanel.Below="dNameTextBlock" />
+        <TextBox x:Name="dOfficeTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="dNameTextBox" RelativePanel.AlignVerticalCenterWith="dOfficeTextBlock" />
+        <TextBlock x:Name="dPhoneTextBlock" Text="Phone: " Margin="20" RelativePanel.Below="dOfficeTextBlock" />
+        <TextBox x:Name="dPhoneTextBox" Width="200" Margin="23,0,0,0" RelativePanel.AlignHorizontalCenterWith="dOfficeTextBox" RelativePanel.AlignVerticalCenterWith="dPhoneTextBlock" />
+    </RelativePanel>
+</ContentDialog>

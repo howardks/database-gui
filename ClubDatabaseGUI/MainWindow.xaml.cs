@@ -1,0 +1,2389 @@
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
+using MySql.Data.MySqlClient;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using CommunityToolkit.WinUI.UI.Controls;
+using System.Data;
+using System.Collections.ObjectModel;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using ClubDatabaseGUI;
+using System.Collections;
+using System.Security.Cryptography;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+
+namespace ClubDatabaseGUI
+{
+
+    public sealed partial class MainWindow : Window
+    {
+        private string userID, password;
+        private MySqlConnection con;
+        private List<Button> buttons = new List<Button>();
+        private List<TextBox> textboxes = new List<TextBox>();
+        private List<DataGrid> dataGrids = new List<DataGrid>();
+        private char[] comparisonOperators = { '=', '<', '>' };
+
+        public MainWindow()
+        {
+            this.InitializeComponent();
+
+            // Make the window the correct size, title, and not maximizable
+            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+
+            var size = new Windows.Graphics.SizeInt32();
+            size.Width = 1700;
+            size.Height = 900;
+
+            appWindow.Resize(size);
+            appWindow.Title = "Student Organization Database";
+
+            if (appWindow.Presenter is OverlappedPresenter p)
+            {
+                p.IsMaximizable = false;
+                p.IsResizable = false;
+            }
+
+            AssignLists();
+        }
+
+        private void AssignLists() // Generate lists of buttons, textboxes, datagrids for enabling/disabling/clearing. 
+        {
+            Button[] buttonArray = { logoutButton, logoutButton1, bookableLocationAdd, bookableLocationModify, bookableLocationDelete, bookableLocationSearch,
+                budgetAdd, budgetModify, budgetDelete, budgetSearch, clubAdd, clubModify, clubDelete, clubSearch, clubEventAdd, clubEventModify, clubEventDelete, clubEventSearch,
+                departmentAdd, departmentModify, departmentDelete, departmentSearch, facultyAdd, facultyModify, facultyDelete, facultySearch, projectAdd, projectModify, projectDelete,
+                projectSearch, socialMediaAdd, socialMediaModify, socialMediaDelete, socialMediaSearch, studentAdd, studentModify, studentDelete, studentSearch,
+                wingsPointsEventAdd, wingsPointsEventModify, wingsPointsEventDelete, wingsPointsEventSearch, projectButton, eventButton, budgetButton, rosterButton, advisorButton };
+            buttons = buttonArray.ToList();
+
+            TextBox[] textBoxArray = { blCampusTextBox, blLocationTextBox, blTypeTextBox, blCapacityTextBox, bOrgIdTextBox, bFeeTextBox, bIncomeTextBox, bExpensesTextBox,
+                cOrgIdTextBox, cNameTextBox, cAboutTextBox, cAdvisorIdTextBox, ceEventIdTextBox, ceHostingOrgIdTextBox, ceDateTextBox, ceAboutTextBox, ceLocationTextBox,
+                dNameTextBox, dOfficeTextBox, dPhoneTextBox, fFNameTextBox, fLNameTextBox, fEagleIdTextBox, fDeptTextBox, fPhoneTextBox, fOfficeTextBox, fEmailTextBox,
+                pTitleTextBox, pAboutTextBox, pParticipantsTextBox, pOrgIdTextBox, pProjectIdTextBox, smUrlTextBox, smUsernameTextBox, smPostNumTextBox, smViewNumTextBox, smOrgIdTextBox,
+                sFNameTextBox, sMInitTextBox, sLNameTextBox, sEagleIdTextBox, sClassTextBox, sPositionTextBox, sPhoneTextBox, sMembershipTextBox, wTitleTextBox, wValueTextBox,
+                wAboutTextBox, wHostingOrgIdTextBox, wDateTextBox, wLocationTextBox};
+            textboxes = textBoxArray.ToList();
+
+            DataGrid[] dataGridArray = { bookableLocationDataGrid, budgetDataGrid, clubDataGrid, clubEventDataGrid, departmentDataGrid, facultyDataGrid, projectDataGrid,
+                socialMediaDataGrid, studentDataGrid, wingsPointsEventDataGrid, commonDataGrid };
+            dataGrids = dataGridArray.ToList();
+        }
+
+        private void RunQuery(DataGrid dg, String query)
+        {
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand(query, con))
+                {
+                    cmd.CommandType = CommandType.Text;
+                    using (MySqlDataAdapter sda = new MySqlDataAdapter(cmd))
+                    {
+                        using (DataTable dt = new DataTable())
+                        {
+                            sda.Fill(dt); // Populate datatable with data generated by running query
+
+                            dg.Columns.Clear();
+                            dg.AutoGenerateColumns = false;
+                            for (int i = 0; i < dt.Columns.Count; i++) // Add columns to datagrid from datatable
+                            {
+                                dg.Columns.Add(new DataGridTextColumn()
+                                {
+                                    Header = dt.Columns[i].ColumnName,
+                                    Binding = new Binding { Path = new PropertyPath("[" + i.ToString() + "]") }
+                                });
+                            }
+
+                            var collection = new ObservableCollection<object>();
+                            foreach (DataRow row in dt.Rows) // Add each row of data to collection
+                            {
+                                collection.Add(row.ItemArray);
+                            }
+
+                            dg.ItemsSource = collection; // Populate datagrid from collection
+                            dt.Clear();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorDialog(ex.Message);
+            }
+
+        }
+
+        private void RunStoredProcedure(MySqlCommand cmd, DataGrid dg)
+        {
+            try
+            {
+                using (MySqlDataAdapter sda = new MySqlDataAdapter(cmd))
+                {
+                    using (DataTable dt = new DataTable())
+                    {
+                        sda.Fill(dt); // Populate datatable with data generated by running query
+
+                        dg.Columns.Clear();
+                        dg.AutoGenerateColumns = false;
+                        for (int i = 0; i < dt.Columns.Count; i++) // Add columns to datagrid from datatable
+                        {
+                            dg.Columns.Add(new DataGridTextColumn()
+                            {
+                                Header = dt.Columns[i].ColumnName,
+                                Binding = new Binding { Path = new PropertyPath("[" + i.ToString() + "]") }
+
+                            });
+                        }
+
+                        var collection = new ObservableCollection<object>();
+                        foreach (DataRow row in dt.Rows) // Add each row of data to collection
+                        {
+                            collection.Add(row.ItemArray);
+                        }
+
+                        dg.ItemsSource = collection; // Populate datagrid from collection
+                        dt.Clear();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorDialog(ex.Message);
+            }
+        }
+
+        private void TabView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (con != null) // Populate visible datagrid with full table each time selected tab is changed
+            {
+                if (tabView.SelectedIndex == 0)
+                {
+                    RunQuery(clubDataGrid, "select * from CLUB;");
+                }
+                else if (tabView.SelectedIndex == 1)
+                {
+                    RunQuery(studentDataGrid, "select * from STUDENT;");
+                }
+                else if (tabView.SelectedIndex == 2)
+                {
+                    RunQuery(facultyDataGrid, "select * from FACULTY;");
+                }
+                else if (tabView.SelectedIndex == 3)
+                {
+                    RunQuery(departmentDataGrid, "select * from DEPARTMENT;");
+                }
+                else if (tabView.SelectedIndex == 4)
+                {
+                    RunQuery(clubEventDataGrid, "select * from CLUB_EVENT;");
+                }
+                else if (tabView.SelectedIndex == 5)
+                {
+                    RunQuery(wingsPointsEventDataGrid, "select * from WINGS_POINTS_EVENT;");
+                }
+                else if (tabView.SelectedIndex == 6)
+                {
+                    RunQuery(bookableLocationDataGrid, "select * from BOOKABLE_LOCATION;");
+                }
+                else if (tabView.SelectedIndex == 7)
+                {
+                    RunQuery(budgetDataGrid, "select * from BUDGET;");
+                }
+                else if (tabView.SelectedIndex == 8)
+                {
+                    RunQuery(projectDataGrid, "select * from PROJECT;");
+                }
+                else if (tabView.SelectedIndex == 9)
+                {
+                    RunQuery(socialMediaDataGrid, "select * from SOCIAL_MEDIA;");
+                }
+            }
+        }
+
+        private void login_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter && usernameBox.Text != "" && passwordBox.Text != "")
+            {
+                loginButton1_Click(null, null);
+            }
+        }
+
+        private void loginButton1_Click(object sender, RoutedEventArgs e)
+        {
+            userID = usernameBox.Text;
+            password = passwordBox.Text;
+
+            // Clear password
+            usernameBox.Text = "";
+            passwordBox.Text = "";
+
+            // Make the connection here and keep it open until logout
+            String myConnectionString;// Set up connection string
+            String server, database;
+            //server = "127.0.0.1";
+            server = "thebestgroup.ciughsu0jr1p.us-east-1.rds.amazonaws.com";
+            //database = "db_project";
+            database = "student_org";
+            myConnectionString = "server=" + server + ";uid=" + userID + ";pwd=" + password + ";database=" + database;
+
+            try
+            {
+                // Open the connection and enable/disable appropriate buttons, textboxes
+                con = new MySqlConnection(myConnectionString);
+                con.Open();
+                loginButton.IsEnabled = false;
+                loginButton1.IsEnabled = false;
+
+                commonSplitButton.IsEnabled = true;
+                for (int i = 0; i < buttons.Count; i++)
+                {
+                    buttons[i].IsEnabled = true;
+                }
+                for (int i = 0; i < textboxes.Count; i++)
+                {
+                    textboxes[i].IsEnabled = true;
+                }
+
+                TabView_SelectionChanged(null, null); // Fill visible datagrid
+            }
+            catch (MySql.Data.MySqlClient.MySqlException ex)
+            {
+                this.ErrorDialog(ex.Message);
+            }
+        }
+
+        private void logoutButton1_Click(object sender, RoutedEventArgs e)
+        {
+            if (con != null)
+            {
+                // Close the connection and enable/disable appropriate buttons, textboxes, clear datagrids
+                con.Close();
+                con = null;
+                loginButton.IsEnabled = true;
+                loginButton1.IsEnabled = true;
+
+                commonSplitButton.IsEnabled = false;
+                for (int i = 0; i < buttons.Count; i++)
+                {
+                    buttons[i].IsEnabled = false;
+                }
+                for (int i = 0; i < textboxes.Count; i++)
+                {
+                    textboxes[i].IsEnabled = false;
+                }
+                for (int i = 0; i < dataGrids.Count; i++)
+                {
+                    dataGrids[i].Columns.Clear();
+                }
+            }
+
+        }
+
+        private async void ErrorDialog(String message)
+        {
+            ErrorDialog cd = new ErrorDialog(message);
+            cd.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await cd.ShowAsync();
+        }
+
+        public static String DateParser(String date)
+        {
+            char[] delimeters = { ' ', '/', ':' };
+            String[] dateArray = date.Split(delimeters);
+
+            if (dateArray[0].Length == 1)
+            {
+                dateArray[0] = "0" + dateArray[0];
+            }
+            if (dateArray[1].Length == 1)
+            {
+                dateArray[1] = "0" + dateArray[1];
+            }
+
+            if (dateArray.Length == 3)
+            {
+                return dateArray[2] + "-" + dateArray[0] + "-" + dateArray[1];
+            }
+
+            if (dateArray.Length == 7)
+            {
+                if (dateArray[3].Equals("12") && dateArray[6].Equals("AM"))
+                {
+                    dateArray[3] = "00";
+                }
+                if (Convert.ToInt32(dateArray[3]) < 12 && dateArray[6].Equals("PM"))
+                {
+                    dateArray[3] = (Convert.ToInt32(dateArray[3]) + 12).ToString();
+                }
+            }
+
+            return dateArray[2] + "-" + dateArray[0] + "-" + dateArray[1] + " " + dateArray[3] + ":" + dateArray[4] + ":" + dateArray[5];
+        }
+
+        private void bookableLocationSearch_Click(object sender, RoutedEventArgs e)
+        {
+            String query = "Select * from BOOKABLE_LOCATION where ";
+            List<String> list = new List<String>();
+
+            if (!blCampusTextBox.Text.Equals("")) // Populate list based on textboxes
+            {
+                list.Add("campus = '" + blCampusTextBox.Text + "'");
+            }
+            if (!blLocationTextBox.Text.Equals(""))
+            {
+                list.Add("location like '%" + blLocationTextBox.Text + "%'");
+            }
+            if (!blTypeTextBox.Text.Equals(""))
+            {
+                list.Add("type = '" + blTypeTextBox.Text + "'");
+            }
+            if (!blCapacityTextBox.Text.Equals(""))
+            {
+                if (blCapacityTextBox.Text.IndexOfAny(comparisonOperators) != -1)
+                {
+                    list.Add("capacity " + blCapacityTextBox.Text);
+                }
+                else
+                {
+                    list.Add("capacity = " + blCapacityTextBox.Text);
+                }
+            }
+
+            if (list.Count == 0) // Generate select query from list
+            {
+                RunQuery(bookableLocationDataGrid, "select * from BOOKABLE_LOCATION;");
+            }
+            else if (list.Count == 1)
+            {
+                query += (list[0] + ";");
+                RunQuery(bookableLocationDataGrid, query);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        query += list[i];
+                    }
+                    else if (i != list.Count - 1)
+                    {
+                        query += (" and " + list[i]);
+                    }
+                    else
+                    {
+                        query += (" and " + list[i] + ";");
+                    }
+                }
+                RunQuery(bookableLocationDataGrid, query); // Run select query
+            }
+        }
+
+        private void budgetSearch_Click(object sender, RoutedEventArgs e)
+        {
+            String query = "select * from BUDGET where ";
+            List<String> list = new List<String>();
+
+            if (!bOrgIdTextBox.Text.Equals("")) // Populate list based on textboxes
+            {
+                list.Add("org_id = " + bOrgIdTextBox.Text);
+            }
+            if (!bFeeTextBox.Text.Equals(""))
+            {
+                if (bFeeTextBox.Text.IndexOfAny(comparisonOperators) != -1)
+                {
+                    list.Add("fee_amount " + bFeeTextBox.Text);
+                }
+                else
+                {
+                    list.Add("fee_amount = " + bFeeTextBox.Text);
+                }
+            }
+            if (!bIncomeTextBox.Text.Equals(""))
+            {
+                if (bIncomeTextBox.Text.IndexOfAny(comparisonOperators) != -1)
+                {
+                    list.Add("income " + bIncomeTextBox.Text);
+                }
+                else
+                {
+                    list.Add("income = " + bIncomeTextBox.Text);
+                }
+            }
+            if (!bExpensesTextBox.Text.Equals(""))
+            {
+                if (bExpensesTextBox.Text.IndexOfAny(comparisonOperators) != -1)
+                {
+                    list.Add("expenses " + bExpensesTextBox.Text);
+                }
+                else
+                {
+                    list.Add("expenses = " + bExpensesTextBox.Text);
+                }
+            }
+
+            if (list.Count == 0) // Generate select query from list
+            {
+                RunQuery(budgetDataGrid, "select * from budget;");
+            }
+            else if (list.Count == 1)
+            {
+                query += (list[0] + ";");
+                RunQuery(budgetDataGrid, query);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        query += list[i];
+                    }
+                    else if (i != list.Count - 1)
+                    {
+                        query += (" and " + list[i]);
+                    }
+                    else
+                    {
+                        query += (" and " + list[i] + ";");
+                    }
+                }
+                RunQuery(budgetDataGrid, query); // Run select query
+            }
+        }
+
+        private void clubSearch_Click(object sender, RoutedEventArgs e)
+        {
+
+            String query = "select * from CLUB where ";
+            List<String> list = new List<String>();
+
+            if (!cOrgIdTextBox.Text.Equals("")) // Populate list based on textboxes
+            {
+                list.Add("org_id = " + cOrgIdTextBox.Text);
+            }
+            if (!cNameTextBox.Text.Equals(""))
+            {
+                list.Add("name = '" + cNameTextBox.Text + "'");
+            }
+            if (!cAdvisorIdTextBox.Text.Equals(""))
+            {
+                list.Add("advisor_id = " + cAdvisorIdTextBox.Text);
+            }
+            if (!cAboutTextBox.Text.Equals(""))
+            {
+                list.Add("about like '%" + cAboutTextBox.Text + "%'");
+            }
+
+            if (list.Count == 0) // Generate select query from list
+            {
+                RunQuery(clubDataGrid, "select * from CLUB;");
+            }
+            else if (list.Count == 1)
+            {
+                query += (list[0] + ";");
+                RunQuery(clubDataGrid, query);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        query += list[i];
+                    }
+                    else if (i != list.Count - 1)
+                    {
+                        query += (" and " + list[i]);
+                    }
+                    else
+                    {
+                        query += (" and " + list[i] + ";");
+                    }
+                }
+                RunQuery(clubDataGrid, query); // Run select query
+            }
+
+        }
+
+        private void clubEventSearch_Click(object sender, RoutedEventArgs e)
+        {
+            String query = "select * from CLUB_EVENT where ";
+            List<String> list = new List<String>();
+
+            if (!ceEventIdTextBox.Text.Equals("")) // Populate list based on textboxes
+            {
+                list.Add("event_id = " + ceEventIdTextBox.Text);
+            }
+            if (!ceHostingOrgIdTextBox.Text.Equals(""))
+            {
+                list.Add("hosting_org_id = " + ceHostingOrgIdTextBox.Text);
+            }
+            if (!ceDateTextBox.Text.Equals(""))
+            {
+                list.Add("date like '" + DateParser(ceDateTextBox.Text) + "%'");
+            }
+            if (!ceLocationTextBox.Text.Equals(""))
+            {
+                list.Add("location like '%" + ceLocationTextBox.Text + "%'");
+            }
+            if (!ceAboutTextBox.Text.Equals(""))
+            {
+                list.Add("about like '%" + ceAboutTextBox.Text + "%'");
+            }
+
+            if (list.Count == 0) // Generate select query from list
+            {
+                RunQuery(clubEventDataGrid, "select * from CLUB_EVENT;");
+            }
+            else if (list.Count == 1)
+            {
+                query += (list[0] + ";");
+                RunQuery(clubEventDataGrid, query);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        query += list[i];
+                    }
+                    else if (i != list.Count - 1)
+                    {
+                        query += (" and " + list[i]);
+                    }
+                    else
+                    {
+                        query += (" and " + list[i] + ";");
+                    }
+                }
+                RunQuery(clubEventDataGrid, query); // Run select query
+            }
+        }
+
+        private void departmentSearch_Click(object sender, RoutedEventArgs e)
+        {
+            String query = "select * from DEPARTMENT where ";
+            List<String> list = new List<String>();
+
+            if (!dNameTextBox.Text.Equals("")) // Populate list based on textboxes
+            {
+                list.Add("name = '" + dNameTextBox.Text + "'");
+            }
+            if (!dOfficeTextBox.Text.Equals(""))
+            {
+                list.Add("office_number = '" + dOfficeTextBox.Text + "'");
+            }
+            if (!dPhoneTextBox.Text.Equals(""))
+            {
+                list.Add("phone = '" + dPhoneTextBox.Text + "'");
+            }
+
+            if (list.Count == 0) // Generate select query from list
+            {
+                RunQuery(departmentDataGrid, "select * from DEPARTMENT;");
+            }
+            else if (list.Count == 1)
+            {
+                query += (list[0] + ";");
+                RunQuery(departmentDataGrid, query);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        query += list[i];
+                    }
+                    else if (i != list.Count - 1)
+                    {
+                        query += (" and " + list[i]);
+                    }
+                    else
+                    {
+                        query += (" and " + list[i] + ";");
+                    }
+                }
+                RunQuery(departmentDataGrid, query); // Run select query
+            }
+        }
+
+        private void facultySearch_Click(object sender, RoutedEventArgs e)
+        {
+            String query = "select * from FACULTY where ";
+            List<String> list = new List<String>();
+
+            if (!fFNameTextBox.Text.Equals("")) // Populate list based on textboxes
+            {
+                list.Add("first_name = '" + fFNameTextBox.Text + "'");
+            }
+            if (!fLNameTextBox.Text.Equals(""))
+            {
+                list.Add("last_name = '" + fLNameTextBox.Text + "'");
+            }
+            if (!fEagleIdTextBox.Text.Equals(""))
+            {
+                list.Add("eagle_id = '" + fEagleIdTextBox.Text + "'");
+            }
+            if (!fDeptTextBox.Text.Equals(""))
+            {
+                list.Add("department = '" + fDeptTextBox.Text + "'");
+            }
+            if (!fPhoneTextBox.Text.Equals(""))
+            {
+                list.Add("phone = '" + fPhoneTextBox.Text + "'");
+            }
+            if (!fOfficeTextBox.Text.Equals(""))
+            {
+                list.Add("office_number = '" + fOfficeTextBox.Text + "'");
+            }
+            if (!fEmailTextBox.Text.Equals(""))
+            {
+                list.Add("emaile = '" + fEmailTextBox.Text + "'");
+            }
+
+            if (list.Count == 0) // Generate select query from list
+            {
+                RunQuery(facultyDataGrid, "select * from FACULTY;");
+            }
+            else if (list.Count == 1)
+            {
+                query += (list[0] + ";");
+                RunQuery(facultyDataGrid, query);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        query += list[i];
+                    }
+                    else if (i != list.Count - 1)
+                    {
+                        query += (" and " + list[i]);
+                    }
+                    else
+                    {
+                        query += (" and " + list[i] + ";");
+                    }
+                }
+                RunQuery(facultyDataGrid, query); // Run select query
+            }
+        }
+
+        private void projectSearch_Click(object sender, RoutedEventArgs e)
+        {
+            String query = "select * from PROJECT where ";
+            List<String> list = new List<String>();
+
+            if (!pProjectIdTextBox.Text.Equals("")) // Populate list based on textboxes
+            {
+                list.Add("project_id = " + pProjectIdTextBox.Text);
+            }
+            if (!pOrgIdTextBox.Text.Equals(""))
+            {
+                list.Add("org_id = " + pOrgIdTextBox.Text);
+            }
+            if (!pTitleTextBox.Text.Equals(""))
+            {
+                list.Add("title = '" + pTitleTextBox.Text + "'");
+            }
+            if (!pParticipantsTextBox.Text.Equals(""))
+            {
+                if (pParticipantsTextBox.Text.IndexOfAny(comparisonOperators) != -1)
+                {
+                    list.Add("total_participants " + pParticipantsTextBox.Text);
+                }
+                else
+                {
+                    list.Add("total_participants = " + pParticipantsTextBox.Text);
+                }
+            }
+            if (!pAboutTextBox.Text.Equals(""))
+            {
+                list.Add("about like '%" + pAboutTextBox.Text + "%'");
+            }
+
+            if (list.Count == 0) // Generate select query from list
+            {
+                RunQuery(projectDataGrid, "select * from PROJECT;");
+            }
+            else if (list.Count == 1)
+            {
+                query += (list[0] + ";");
+                RunQuery(projectDataGrid, query);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        query += list[i];
+                    }
+                    else if (i != list.Count - 1)
+                    {
+                        query += (" and " + list[i]);
+                    }
+                    else
+                    {
+                        query += (" and " + list[i] + ";");
+                    }
+                }
+                RunQuery(projectDataGrid, query); // Run select query
+            }
+        }
+
+        private void socialMediaSearch_Click(object sender, RoutedEventArgs e)
+        {
+            String query = "select * from SOCIAL_MEDIA where ";
+            List<String> list = new List<String>();
+
+            if (!smOrgIdTextBox.Text.Equals("")) // Populate list based on textboxes
+            {
+                list.Add("org_id = " + smOrgIdTextBox.Text);
+            }
+            if (!smUrlTextBox.Text.Equals(""))
+            {
+                list.Add("url = '" + smUrlTextBox.Text + "'");
+            }
+            if (!smUsernameTextBox.Text.Equals(""))
+            {
+                list.Add("username = '" + smUsernameTextBox.Text + "'");
+            }
+            if (!smPostNumTextBox.Text.Equals(""))
+            {
+                if (smPostNumTextBox.Text.IndexOfAny(comparisonOperators) != -1)
+                {
+                    list.Add("num_of_posts " + smPostNumTextBox.Text);
+                }
+                else
+                {
+                    list.Add("num_of_posts = " + smPostNumTextBox.Text);
+                }
+            }
+            if (!smViewNumTextBox.Text.Equals(""))
+            {
+                if (smViewNumTextBox.Text.IndexOfAny(comparisonOperators) != -1)
+                {
+                    list.Add("num_of_views " + smViewNumTextBox.Text);
+                }
+                else
+                {
+                    list.Add("num_of_views = " + smViewNumTextBox.Text);
+                }
+            }
+
+            if (list.Count == 0) // Generate select query from list
+            {
+                RunQuery(socialMediaDataGrid, "select * from SOCIAL_MEDIA;");
+            }
+            else if (list.Count == 1)
+            {
+                query += (list[0] + ";");
+                RunQuery(socialMediaDataGrid, query);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        query += list[i];
+                    }
+                    else if (i != list.Count - 1)
+                    {
+                        query += (" and " + list[i]);
+                    }
+                    else
+                    {
+                        query += (" and " + list[i] + ";");
+                    }
+                }
+                RunQuery(socialMediaDataGrid, query); // Run select query
+            }
+        }
+
+        private void studentSearch_Click(object sender, RoutedEventArgs e)
+        {
+            String query = "select * from STUDENT where ";
+            List<String> list = new List<String>();
+
+            if (!sFNameTextBox.Text.Equals("")) // Populate list based on textboxes
+            {
+                list.Add("first_name = '" + sFNameTextBlock.Text + "'");
+            }
+            if (!sMInitTextBox.Text.Equals(""))
+            {
+                list.Add("m_init = '" + sMInitTextBox.Text + "'");
+            }
+            if (!sLNameTextBox.Text.Equals(""))
+            {
+                list.Add("last_name = '" + sLNameTextBox.Text + "'");
+            }
+            if (!sEagleIdTextBox.Text.Equals(""))
+            {
+                list.Add("eagle_id = '" + sEagleIdTextBox.Text + "'");
+            }
+            if (!sClassTextBox.Text.Equals(""))
+            {
+                list.Add("class = '" + sClassTextBox.Text + "'");
+            }
+            if (!sPositionTextBox.Text.Equals(""))
+            {
+                list.Add("position = '" + sPositionTextBox.Text + "'");
+            }
+            if (!sPhoneTextBox.Text.Equals(""))
+            {
+                list.Add("phone = '" + sPhoneTextBox.Text + "'");
+            }
+            if (!sMembershipTextBox.Text.Equals(""))
+            {
+                list.Add("membership = " + sMembershipTextBox.Text);
+            }
+
+            if (list.Count == 0) // Generate select query from list
+            {
+                RunQuery(studentDataGrid, "select * from STUDENT;");
+            }
+            else if (list.Count == 1)
+            {
+                query += (list[0] + ";");
+                RunQuery(studentDataGrid, query);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        query += list[i];
+                    }
+                    else if (i != list.Count - 1)
+                    {
+                        query += (" and " + list[i]);
+                    }
+                    else
+                    {
+                        query += (" and " + list[i] + ";");
+                    }
+                }
+                RunQuery(studentDataGrid, query); // Run select query
+            }
+        }
+
+        private void wingsPointsEventSearch_Click(object sender, RoutedEventArgs e)
+        {
+            String query = "select * from WINGS_POINTS_EVENT where ";
+            List<String> list = new List<String>();
+
+            if (!wTitleTextBox.Text.Equals("")) // Populate list based on textboxes
+            {
+                list.Add("title = '" + wTitleTextBox.Text + "'");
+            }
+            if (!wHostingOrgIdTextBox.Text.Equals(""))
+            {
+                list.Add("hosting_org_id = " + wHostingOrgIdTextBox.Text);
+            }
+            if (!wValueTextBox.Text.Equals(""))
+            {
+                if (wValueTextBox.Text.IndexOfAny(comparisonOperators) != -1)
+                {
+                    list.Add("points_value " + wValueTextBox.Text);
+                }
+                else
+                {
+                    list.Add("points_value = " + wValueTextBox.Text);
+                }
+            }
+            if (!wDateTextBox.Text.Equals(""))
+            {
+                list.Add("date like '%" + DateParser(wDateTextBox.Text) + "%'");
+            }
+            if (!wLocationTextBox.Text.Equals(""))
+            {
+                list.Add("location like '%" + wLocationTextBox.Text + "%'");
+            }
+            if (!wAboutTextBox.Text.Equals(""))
+            {
+                list.Add("about like '%" + wAboutTextBox.Text + "%'");
+            }
+
+            if (list.Count == 0) // Generate select query from list
+            {
+                RunQuery(wingsPointsEventDataGrid, "select * from WINGS_POINTS_EVENT;");
+            }
+            else if (list.Count == 1)
+            {
+                query += (list[0] + ";");
+                RunQuery(wingsPointsEventDataGrid, query);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        query += list[i];
+                    }
+                    else if (i != list.Count - 1)
+                    {
+                        query += (" and " + list[i]);
+                    }
+                    else
+                    {
+                        query += (" and " + list[i] + ";");
+                    }
+                }
+                RunQuery(wingsPointsEventDataGrid, query); // Run select query
+            }
+        }
+
+        private async void bookableLocationAdd_Click(object sender, RoutedEventArgs e)
+        {
+            BookableLocationDialog dialog = new BookableLocationDialog // Display custom dialog with appropriate fields
+            {
+                Title = "Add Bookable Location",
+                PrimaryButtonText = "Add",
+                CloseButtonText = "Cancel"
+            };
+
+            dialog.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("bookable_location_procedure", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    bool success = dialog.GenerateAddQuery(cmd);
+
+                    if (success)
+                    {
+                        cmd.ExecuteNonQuery(); // Run add query
+                    }
+                    else
+                    {
+                        this.ErrorDialog("Column 'location' cannot be null."); // Error if primary key field is null
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+            }
+            TabView_SelectionChanged(null, null); // Populate visible datagrid
+        }
+
+        private async void budgetAdd_Click(object sender, RoutedEventArgs e)
+        {
+            BudgetDialog dialog = new BudgetDialog // Display custom dialog with appropriate fields
+            {
+                Title = "Add Budget",
+                PrimaryButtonText = "Add",
+                CloseButtonText = "Cancel"
+            };
+            dialog.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("budget_procedure", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    bool success = dialog.GenerateAddQuery(cmd);
+
+                    if (success)
+                    {
+                        cmd.ExecuteNonQuery(); // Run add query
+                    }
+                    else
+                    {
+                        this.ErrorDialog("Column 'org_id' cannot be null."); // Error if primary key field is null
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+            }
+            TabView_SelectionChanged(null, null); // Populate visible datagrid
+        }
+
+        private async void clubAdd_Click(object sender, RoutedEventArgs e)
+        {
+            ClubDialog dialog = new ClubDialog // Display custom dialog with appropriate fields
+            {
+                Title = "Add Club",
+                PrimaryButtonText = "Add",
+                CloseButtonText = "Cancel"
+            };
+            dialog.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("club_procedure", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    bool success = dialog.GenerateAddQuery(cmd);
+
+                    if (success)
+                    {
+                        cmd.ExecuteNonQuery(); // Run add query
+                    }
+                    else
+                    {
+                        this.ErrorDialog("Column 'org_id' cannot be null."); // Error if primary key field is null
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+            }
+            TabView_SelectionChanged(null, null); // Populate visible datagrid
+        }
+
+        private async void clubEventAdd_Click(object sender, RoutedEventArgs e)
+        {
+            ClubEventDialog dialog = new ClubEventDialog // Display custom dialog with appropriate fields
+            {
+                Title = "Add Club Event",
+                PrimaryButtonText = "Add",
+                CloseButtonText = "Cancel"
+            };
+            dialog.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("club_event_procedure", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    bool success = dialog.GenerateAddQuery(cmd);
+
+                    if (success)
+                    {
+                        cmd.ExecuteNonQuery(); // Run add query
+                    }
+                    else
+                    {
+                        this.ErrorDialog("Column 'event_id' cannot be null."); // Error if primary key field is null
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+            }
+            TabView_SelectionChanged(null, null); // Populate visible datagrid*
+        }
+
+        private async void departmentAdd_Click(object sender, RoutedEventArgs e)
+        {
+            DepartmentDialog dialog = new DepartmentDialog // Display custom dialog with appropriate fields
+            {
+                Title = "Add Department",
+                PrimaryButtonText = "Add",
+                CloseButtonText = "Cancel"
+            };
+            dialog.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("department_procedure", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    bool success = dialog.GenerateAddQuery(cmd);
+
+                    if (success)
+                    {
+                        cmd.ExecuteNonQuery(); // Run add query
+                    }
+                    else
+                    {
+                        this.ErrorDialog("Column 'name' cannot be null."); // Error if primary key field is null
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+            }
+            TabView_SelectionChanged(null, null); // Populate visible datagrid
+        }
+
+        private async void facultyAdd_Click(object sender, RoutedEventArgs e)
+        {
+            FacultyDialog dialog = new FacultyDialog // Display custom dialog with appropriate fields
+            {
+                Title = "Add Faculty",
+                PrimaryButtonText = "Add",
+                CloseButtonText = "Cancel"
+            };
+            dialog.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("faculty_procedure", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    bool success = dialog.GenerateAddQuery(cmd);
+
+                    if (success)
+                    {
+                        cmd.ExecuteNonQuery(); // Run add query
+                    }
+                    else
+                    {
+                        this.ErrorDialog("Column 'eagle_id' cannot be null."); // Error if primary key field is null
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+            }
+            TabView_SelectionChanged(null, null); // Populate visible datagrid
+        }
+
+        private async void projectAdd_Click(object sender, RoutedEventArgs e)
+        {
+            ProjectDialog dialog = new ProjectDialog // Display custom dialog with appropriate fields
+            {
+                Title = "Add Project",
+                PrimaryButtonText = "Add",
+                CloseButtonText = "Cancel"
+            };
+            dialog.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("project_procedure", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    bool success = dialog.GenerateAddQuery(cmd);
+
+                    if (success)
+                    {
+                        cmd.ExecuteNonQuery(); // Run add query
+                    }
+                    else
+                    {
+                        this.ErrorDialog("Column 'project_id' cannot be null."); // Error if primary key field is null
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+            }
+            TabView_SelectionChanged(null, null); // Populate visible datagrid
+        }
+
+        private async void socialMediaAdd_Click(object sender, RoutedEventArgs e)
+        {
+            SocialMediaDialog dialog = new SocialMediaDialog // Display custom dialog with appropriate fields
+            {
+                Title = "Add Social Media",
+                PrimaryButtonText = "Add",
+                CloseButtonText = "Cancel"
+            };
+            dialog.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("social_media_procedure", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    bool success = dialog.GenerateAddQuery(cmd);
+
+                    if (success)
+                    {
+                        cmd.ExecuteNonQuery(); // Run add query
+                    }
+                    else
+                    {
+                        this.ErrorDialog("Column 'url' cannot be null."); // Error if primary key field is null
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+            }
+            TabView_SelectionChanged(null, null); // Populate visible datagrid
+        }
+
+        private async void studentAdd_Click(object sender, RoutedEventArgs e)
+        {
+            StudentDialog dialog = new StudentDialog // Display custom dialog with appropriate fields
+            {
+                Title = "Add Student",
+                PrimaryButtonText = "Add",
+                CloseButtonText = "Cancel"
+            };
+            dialog.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("student_procedure", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    bool success = dialog.GenerateAddQuery(cmd);
+
+                    if (success)
+                    {
+                        cmd.ExecuteNonQuery(); // Run add query
+                    }
+                    else
+                    {
+                        this.ErrorDialog("Column 'eagle_id' cannot be null."); // Error if primary key field is null
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+            }
+            TabView_SelectionChanged(null, null); // Populate visible datagrid
+        }
+
+        private async void wingsPointsEventAdd_Click(object sender, RoutedEventArgs e)
+        {
+            WingsPointsEventDialog dialog = new WingsPointsEventDialog // Display custom dialog with appropriate fields
+            {
+                Title = "Add Wings Points Event",
+                PrimaryButtonText = "Add",
+                CloseButtonText = "Cancel"
+            };
+            dialog.XamlRoot = this.Content.XamlRoot;
+            ContentDialogResult result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("wings_points_event_procedure", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    bool success = dialog.GenerateAddQuery(cmd);
+
+                    if (success)
+                    {
+                        cmd.ExecuteNonQuery(); // Run add query
+                    }
+                    else
+                    {
+                        this.ErrorDialog("Column 'title' cannot be null."); // Error if primary key field is null
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+            }
+            TabView_SelectionChanged(null, null); // Populate visible datagrid
+        }
+
+        private async void bookableLocationModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (bookableLocationDataGrid.SelectedItem != null)
+            {
+                // Create data for populating dialog
+                List<String> data = new List<String>();
+
+                for (int i = 0; i < bookableLocationDataGrid.Columns.Count; i++) // Populate data from selected row
+                {
+                    data.Add(((TextBlock)bookableLocationDataGrid.Columns[i].GetCellContent(bookableLocationDataGrid.SelectedItem)).Text);
+                }
+
+                BookableLocationDialog dialog = new BookableLocationDialog(data) // Display custom dialog with appropriate fields populated from data list
+                {
+                    Title = "Modify Bookable Location",
+                    PrimaryButtonText = "Modify",
+                    CloseButtonText = "Cancel"
+                };
+                dialog.XamlRoot = this.Content.XamlRoot;
+                ContentDialogResult result = await dialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary) // Prepare modify command
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand("bookable_location_procedure", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        bool success = dialog.GenerateModifyQuery(cmd); // Generate modify command from method in BookableLocationDialog
+
+                        if (success)
+                        {
+                            cmd.ExecuteNonQuery(); // Run modify command
+                        }
+                        else
+                        {
+                            this.ErrorDialog("Column 'location' cannot be null."); // Error if primary key field is null
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        this.ErrorDialog(ex.Message);
+                    }
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else if (con != null)
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void budgetModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (budgetDataGrid.SelectedItem != null)
+            {
+                List<String> data = new List<String>();
+
+                for (int i = 0; i < budgetDataGrid.Columns.Count; i++) // Populate data from selected row
+                {
+                    data.Add(((TextBlock)budgetDataGrid.Columns[i].GetCellContent(budgetDataGrid.SelectedItem)).Text);
+                }
+
+                BudgetDialog dialog = new BudgetDialog(data) // Display custom dialog with appropriate fields populated from data
+                {
+                    Title = "Modify Budget",
+                    PrimaryButtonText = "Modify",
+                    CloseButtonText = "Cancel"
+                };
+                dialog.XamlRoot = this.Content.XamlRoot;
+                ContentDialogResult result = await dialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary) // Prepare modify command
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand("budget_procedure", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        bool success = dialog.GenerateModifyQuery(cmd); // Generate modify command from method in BudgetDialog
+
+                        if (success)
+                        {
+                            cmd.ExecuteNonQuery(); // Run modify command
+                        }
+                        else
+                        {
+                            this.ErrorDialog("Column 'org_id' cannot be null."); // Error if primary key field is null
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        this.ErrorDialog(ex.Message);
+                    }
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else if (con != null)
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void clubModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (clubDataGrid.SelectedItem != null)
+            {
+                // Create data for populating dialog
+                List<String> data = new List<String>();
+
+                for (int i = 0; i < clubDataGrid.Columns.Count; i++) // Populate data from selected row
+                {
+                    data.Add(((TextBlock)clubDataGrid.Columns[i].GetCellContent(clubDataGrid.SelectedItem)).Text);
+                }
+
+                ClubDialog dialog = new ClubDialog(data) // Display custom dialog with appropriate fields populated from data
+                {
+                    Title = "Modify Club",
+                    PrimaryButtonText = "Modify",
+                    CloseButtonText = "Cancel"
+                };
+                dialog.XamlRoot = this.Content.XamlRoot;
+                ContentDialogResult result = await dialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary) // Prepare modify command
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand("club_procedure", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        bool success = dialog.GenerateModifyQuery(cmd); // Generate modify command from method in ClubDialog
+
+                        if (success)
+                        {
+                            cmd.ExecuteNonQuery(); // Run modify command
+                        }
+                        else
+                        {
+                            this.ErrorDialog("Column 'org_id' cannot be null."); // Error if primary key field is null
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        this.ErrorDialog(ex.Message);
+                    }
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else if (con != null)
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void clubEventModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (clubEventDataGrid.SelectedItem != null)
+            {
+                // Create data for populating dialog
+                List<String> data = new List<String>();
+
+                for (int i = 0; i < clubEventDataGrid.Columns.Count; i++) // Populate data from selected row
+                {
+                    data.Add(((TextBlock)clubEventDataGrid.Columns[i].GetCellContent(clubEventDataGrid.SelectedItem)).Text);
+                }
+
+                ClubEventDialog dialog = new ClubEventDialog(data) // Display custom dialog with appropriate fields populated from data
+                {
+                    Title = "Modify Club Event",
+                    PrimaryButtonText = "Modify",
+                    CloseButtonText = "Cancel"
+                };
+                dialog.XamlRoot = this.Content.XamlRoot;
+
+                ContentDialogResult result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand("club_event_procedure", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        bool success = dialog.GenerateModifyQuery(cmd); // Generate modify command from method in ClubDialog
+
+                        if (success)
+                        {
+                            cmd.ExecuteNonQuery(); // Run modify command
+                        }
+                        else
+                        {
+                            this.ErrorDialog("Column 'event_id' cannot be null."); // Error if primary key field is null
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        this.ErrorDialog(ex.Message);
+                    }
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void departmentModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (departmentDataGrid.SelectedItem != null)
+            {
+                // Create data for populating dialog
+                List<String> data = new List<String>();
+
+                for (int i = 0; i < departmentDataGrid.Columns.Count; i++) // Populate data from selected row
+                {
+                    data.Add(((TextBlock)departmentDataGrid.Columns[i].GetCellContent(departmentDataGrid.SelectedItem)).Text);
+                }
+
+                DepartmentDialog dialog = new DepartmentDialog(data) // Display custom dialog with appropriate fields populated from data
+                {
+                    Title = "Modify Department",
+                    PrimaryButtonText = "Modify",
+                    CloseButtonText = "Cancel"
+                };
+                dialog.XamlRoot = this.Content.XamlRoot;
+
+                ContentDialogResult result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand("department_procedure", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        bool success = dialog.GenerateModifyQuery(cmd); // Generate modify command from method in ClubDialog
+
+                        if (success)
+                        {
+                            cmd.ExecuteNonQuery(); // Run modify command
+                        }
+                        else
+                        {
+                            this.ErrorDialog("Column 'name' cannot be null."); // Error if primary key field is null
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        this.ErrorDialog(ex.Message);
+                    }
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void facultyModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (facultyDataGrid.SelectedItem != null)
+            {
+                // Create data for populating dialog
+                List<String> data = new List<String>();
+
+                for (int i = 0; i < facultyDataGrid.Columns.Count; i++) // Populate data from selected row
+                {
+                    data.Add(((TextBlock)facultyDataGrid.Columns[i].GetCellContent(facultyDataGrid.SelectedItem)).Text);
+                }
+
+                FacultyDialog dialog = new FacultyDialog(data) // Display custom dialog with appropriate fields populated from data
+                {
+                    Title = "Modify Faculty",
+                    PrimaryButtonText = "Modify",
+                    CloseButtonText = "Cancel"
+                };
+                dialog.XamlRoot = this.Content.XamlRoot;
+
+                ContentDialogResult result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand("faculty_procedure", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        bool success = dialog.GenerateModifyQuery(cmd); // Generate modify command from method in ClubDialog
+
+                        if (success)
+                        {
+                            cmd.ExecuteNonQuery(); // Run modify command
+                        }
+                        else
+                        {
+                            this.ErrorDialog("Column 'eagle_id' cannot be null."); // Error if primary key field is null
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        this.ErrorDialog(ex.Message);
+                    }
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void projectModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (projectDataGrid.SelectedItem != null)
+            {
+                // Create data for populating dialog
+                List<String> data = new List<String>();
+
+                for (int i = 0; i < projectDataGrid.Columns.Count; i++) // Populate data from selected row
+                {
+                    data.Add(((TextBlock)projectDataGrid.Columns[i].GetCellContent(projectDataGrid.SelectedItem)).Text);
+                }
+
+                ProjectDialog dialog = new ProjectDialog(data) // Display custom dialog with appropriate fields populated from data
+                {
+                    Title = "Modify Project",
+                    PrimaryButtonText = "Modify",
+                    CloseButtonText = "Cancel"
+                };
+                dialog.XamlRoot = this.Content.XamlRoot;
+
+                ContentDialogResult result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand("project_procedure", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        bool success = dialog.GenerateModifyQuery(cmd); // Generate modify command from method in ClubDialog
+
+                        if (success)
+                        {
+                            cmd.ExecuteNonQuery(); // Run modify command
+                        }
+                        else
+                        {
+                            this.ErrorDialog("Column 'project_id' cannot be null."); // Error if primary key field is null
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        this.ErrorDialog(ex.Message);
+                    }
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void socialMediaModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (socialMediaDataGrid.SelectedItem != null)
+            {
+                // Create data for populating dialog
+                List<String> data = new List<String>();
+
+                for (int i = 0; i < socialMediaDataGrid.Columns.Count; i++) // Populate data from selected row
+                {
+                    data.Add(((TextBlock)socialMediaDataGrid.Columns[i].GetCellContent(socialMediaDataGrid.SelectedItem)).Text);
+                }
+
+                SocialMediaDialog dialog = new SocialMediaDialog(data) // Display custom dialog with appropriate fields populated from data
+                {
+                    Title = "Modify Social Media",
+                    PrimaryButtonText = "Modify",
+                    CloseButtonText = "Cancel"
+                };
+                dialog.XamlRoot = this.Content.XamlRoot;
+
+                ContentDialogResult result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand("social_media_procedure", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        bool success = dialog.GenerateModifyQuery(cmd); // Generate modify command from method in ClubDialog
+
+                        if (success)
+                        {
+                            cmd.ExecuteNonQuery(); // Run modify command
+                        }
+                        else
+                        {
+                            this.ErrorDialog("Column 'url' cannot be null."); // Error if primary key field is null
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        this.ErrorDialog(ex.Message);
+                    }
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void studentModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (studentDataGrid.SelectedItem != null)
+            {
+                // Create data for populating dialog
+                List<String> data = new List<String>();
+
+                for (int i = 0; i < studentDataGrid.Columns.Count; i++) // Populate data from selected row
+                {
+                    data.Add(((TextBlock)studentDataGrid.Columns[i].GetCellContent(studentDataGrid.SelectedItem)).Text);
+                }
+
+                StudentDialog dialog = new StudentDialog(data) // Display custom dialog with appropriate fields populated from data
+                {
+                    Title = "Modify Student",
+                    PrimaryButtonText = "Modify",
+                    CloseButtonText = "Cancel"
+                };
+                dialog.XamlRoot = this.Content.XamlRoot;
+
+                ContentDialogResult result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand("student_procedure", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        bool success = dialog.GenerateModifyQuery(cmd); // Generate modify command from method in ClubDialog
+
+                        if (success)
+                        {
+                            cmd.ExecuteNonQuery(); // Run modify command
+                        }
+                        else
+                        {
+                            this.ErrorDialog("Column 'eagle_id' cannot be null."); // Error if primary key field is null
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        this.ErrorDialog(ex.Message);
+                    }
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void wingsPointsEventModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (wingsPointsEventDataGrid.SelectedItem != null)
+            {
+                // Create data for populating dialog
+                List<String> data = new List<String>();
+
+                for (int i = 0; i < wingsPointsEventDataGrid.Columns.Count; i++) // Populate data from selected row
+                {
+                    data.Add(((TextBlock)wingsPointsEventDataGrid.Columns[i].GetCellContent(wingsPointsEventDataGrid.SelectedItem)).Text);
+                }
+
+                WingsPointsEventDialog dialog = new WingsPointsEventDialog(data) // Display custom dialog with appropriate fields populated from data
+                {
+                    Title = "Modify Wings Point Event",
+                    PrimaryButtonText = "Modify",
+                    CloseButtonText = "Cancel"
+                };
+                dialog.XamlRoot = this.Content.XamlRoot;
+
+                ContentDialogResult result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    try
+                    {
+                        MySqlCommand cmd = new MySqlCommand("wings_points_event_procedure", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        bool success = dialog.GenerateModifyQuery(cmd); // Generate modify command from method in ClubDialog
+
+                        if (success)
+                        {
+                            cmd.ExecuteNonQuery(); // Run modify command
+                        }
+                        else
+                        {
+                            this.ErrorDialog("Column 'title' cannot be null."); // Error if primary key field is null
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        this.ErrorDialog(ex.Message);
+                    }
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void bookableLocationDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid grid = bookableLocationDataGrid;
+
+            if (grid.SelectedItem != null && ((TextBlock)grid.Columns[1].GetCellContent(grid.SelectedItem)).Text != "")
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("bookable_location_procedure", con); // Create command
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new MySqlParameter("statement_type", "delete"));// Populate statement type and primary key parameter
+                    cmd.Parameters.Add(new MySqlParameter("new_location", ((TextBlock)grid.Columns[1].GetCellContent(grid.SelectedItem)).Text));
+
+                    cmd.Parameters.Add(new MySqlParameter("new_campus", null)); // Populate irrelevant parameters with null
+                    cmd.Parameters.Add(new MySqlParameter("new_type", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_capacity", null));
+
+                    ErrorDialog cd = new ErrorDialog // Delete confirmation dialog
+                    {
+                        Title = "",
+                        Content = "Confirm delete?",
+                        PrimaryButtonText = "Delete",
+                        CloseButtonText = "Cancel"
+                    };
+                    cd.XamlRoot = this.Content.XamlRoot;
+                    ContentDialogResult result = await cd.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary) // Run delete query
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void budgetDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid grid = budgetDataGrid;
+
+            if (grid.SelectedItem != null && ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text != "")
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("budget_procedure", con); // Create command
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new MySqlParameter("statement_type", "delete"));// Populate statement type and primary key parameter
+                    cmd.Parameters.Add(new MySqlParameter("new_org_id", ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text));
+
+                    cmd.Parameters.Add(new MySqlParameter("new_fee_amount", null)); // Populate irrelevant parameters with null
+                    cmd.Parameters.Add(new MySqlParameter("new_income", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_expenses", null));
+
+                    ErrorDialog cd = new ErrorDialog // Delete confirmation dialog
+                    {
+                        Title = "",
+                        Content = "Confirm delete?",
+                        PrimaryButtonText = "Delete",
+                        CloseButtonText = "Cancel"
+                    };
+                    cd.XamlRoot = this.Content.XamlRoot;
+                    ContentDialogResult result = await cd.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary) // Run delete query
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void clubDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid grid = clubDataGrid;
+
+            if (grid.SelectedItem != null && ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text != "")
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("club_procedure", con); // Create command
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new MySqlParameter("statement_type", "delete"));// Populate statement type and primary key parameter
+                    cmd.Parameters.Add(new MySqlParameter("new_org_id", ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text));
+
+                    cmd.Parameters.Add(new MySqlParameter("new_name", null)); // Populate irrelevant parameters with null
+                    cmd.Parameters.Add(new MySqlParameter("new_advisor_id", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_about", null));
+
+                    ErrorDialog cd = new ErrorDialog // Delete confirmation dialog
+                    {
+                        Title = "",
+                        Content = "Confirm delete?",
+                        PrimaryButtonText = "Delete",
+                        CloseButtonText = "Cancel"
+                    };
+                    cd.XamlRoot = this.Content.XamlRoot;
+                    ContentDialogResult result = await cd.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary) // Run delete query
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void clubEventDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid grid = clubEventDataGrid;
+
+            if (grid.SelectedItem != null && ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text != "")
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("club_event_procedure", con); // Create command
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new MySqlParameter("statement_type", "delete"));// Populate statement type and primary key parameter
+                    cmd.Parameters.Add(new MySqlParameter("new_event_id", ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text));
+
+                    cmd.Parameters.Add(new MySqlParameter("new_hosting_org_id", null)); // Populate irrelevant parameters with null
+                    cmd.Parameters.Add(new MySqlParameter("new_date", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_location", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_about", null));
+
+                    ErrorDialog cd = new ErrorDialog // Delete confirmation dialog
+                    {
+                        Title = "",
+                        Content = "Confirm delete?",
+                        PrimaryButtonText = "Delete",
+                        CloseButtonText = "Cancel"
+                    };
+                    cd.XamlRoot = this.Content.XamlRoot;
+                    ContentDialogResult result = await cd.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary) // Run delete query
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void departmentDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid grid = departmentDataGrid;
+
+            if (grid.SelectedItem != null && ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text != "")
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("department_procedure", con); // Create command
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new MySqlParameter("statement_type", "delete"));// Populate statement type and primary key parameter
+                    cmd.Parameters.Add(new MySqlParameter("new_name", ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text));
+
+                    cmd.Parameters.Add(new MySqlParameter("new_office_number", null)); // Populate irrelevant parameters with null
+                    cmd.Parameters.Add(new MySqlParameter("new_phone", null));
+
+                    ErrorDialog cd = new ErrorDialog // Delete confirmation dialog
+                    {
+                        Title = "",
+                        Content = "Confirm delete?",
+                        PrimaryButtonText = "Delete",
+                        CloseButtonText = "Cancel"
+                    };
+                    cd.XamlRoot = this.Content.XamlRoot;
+                    ContentDialogResult result = await cd.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary) // Run delete query
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void facultyDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid grid = facultyDataGrid;
+
+            if (grid.SelectedItem != null && ((TextBlock)grid.Columns[2].GetCellContent(grid.SelectedItem)).Text != "")
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("faculty_procedure", con); // Create command
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new MySqlParameter("statement_type", "delete"));// Populate statement type and primary key parameter
+                    cmd.Parameters.Add(new MySqlParameter("new_eagle_id", ((TextBlock)grid.Columns[2].GetCellContent(grid.SelectedItem)).Text));
+
+                    cmd.Parameters.Add(new MySqlParameter("new_first_name", null)); // Populate irrelevant parameters with null
+                    cmd.Parameters.Add(new MySqlParameter("new_last_name", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_department", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_phone", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_office_num", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_email", null));
+
+                    ErrorDialog cd = new ErrorDialog // Delete confirmation dialog
+                    {
+                        Title = "",
+                        Content = "Confirm delete?",
+                        PrimaryButtonText = "Delete",
+                        CloseButtonText = "Cancel"
+                    };
+                    cd.XamlRoot = this.Content.XamlRoot;
+                    ContentDialogResult result = await cd.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary) // Run delete query
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void projectDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid grid = projectDataGrid;
+
+            if (grid.SelectedItem != null && ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text != "")
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("project_procedure", con); // Create command
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new MySqlParameter("statement_type", "delete"));// Populate statement type and primary key parameter
+                    cmd.Parameters.Add(new MySqlParameter("new_project_id", ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text));
+
+                    cmd.Parameters.Add(new MySqlParameter("new_org_id", null)); // Populate irrelevant parameters with null
+                    cmd.Parameters.Add(new MySqlParameter("new_title", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_total_participants", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_about", null));
+
+                    ErrorDialog cd = new ErrorDialog // Delete confirmation dialog
+                    {
+                        Title = "",
+                        Content = "Confirm delete?",
+                        PrimaryButtonText = "Delete",
+                        CloseButtonText = "Cancel"
+                    };
+                    cd.XamlRoot = this.Content.XamlRoot;
+                    ContentDialogResult result = await cd.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary) // Run delete query
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void socialMediaDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid grid = socialMediaDataGrid;
+
+            if (grid.SelectedItem != null && ((TextBlock)grid.Columns[1].GetCellContent(grid.SelectedItem)).Text != "")
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("social_media_procedure", con); // Create command
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new MySqlParameter("statement_type", "delete"));// Populate statement type and primary key parameter
+                    cmd.Parameters.Add(new MySqlParameter("new_url", ((TextBlock)grid.Columns[1].GetCellContent(grid.SelectedItem)).Text));
+
+                    cmd.Parameters.Add(new MySqlParameter("new_org_id", null)); // Populate irrelevant parameters with null
+                    cmd.Parameters.Add(new MySqlParameter("new_username", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_num_of_posts", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_num_of_views", null));
+
+                    ErrorDialog cd = new ErrorDialog // Delete confirmation dialog
+                    {
+                        Title = "",
+                        Content = "Confirm delete?",
+                        PrimaryButtonText = "Delete",
+                        CloseButtonText = "Cancel"
+                    };
+                    cd.XamlRoot = this.Content.XamlRoot;
+                    ContentDialogResult result = await cd.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary) // Run delete query
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void studentDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid grid = studentDataGrid;
+
+            if (grid.SelectedItem != null && ((TextBlock)grid.Columns[3].GetCellContent(grid.SelectedItem)).Text != "")
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("student_procedure", con); // Create command
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new MySqlParameter("statement_type", "delete"));// Populate statement type and primary key parameter
+                    cmd.Parameters.Add(new MySqlParameter("new_eagle_id", ((TextBlock)grid.Columns[3].GetCellContent(grid.SelectedItem)).Text));
+
+                    cmd.Parameters.Add(new MySqlParameter("new_first_name", null)); // Populate irrelevant parameters with null
+                    cmd.Parameters.Add(new MySqlParameter("new_m_init", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_last_name", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_class", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_position", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_phone", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_membership", null));
+
+                    ErrorDialog cd = new ErrorDialog // Delete confirmation dialog
+                    {
+                        Title = "",
+                        Content = "Confirm delete?",
+                        PrimaryButtonText = "Delete",
+                        CloseButtonText = "Cancel"
+                    };
+                    cd.XamlRoot = this.Content.XamlRoot;
+                    ContentDialogResult result = await cd.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary) // Run delete query
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private async void wingsPointsEventDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid grid = wingsPointsEventDataGrid;
+
+            if (grid.SelectedItem != null && ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text != "")
+            {
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand("wings_points_event_procedure", con); // Create command
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new MySqlParameter("statement_type", "delete"));// Populate statement type and primary key parameter
+                    cmd.Parameters.Add(new MySqlParameter("new_title", ((TextBlock)grid.Columns[0].GetCellContent(grid.SelectedItem)).Text));
+
+                    cmd.Parameters.Add(new MySqlParameter("new_hosting_org_id", null)); // Populate irrelevant parameters with null
+                    cmd.Parameters.Add(new MySqlParameter("new_points_value", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_date", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_location", null));
+                    cmd.Parameters.Add(new MySqlParameter("new_about", null));
+
+                    ErrorDialog cd = new ErrorDialog // Delete confirmation dialog
+                    {
+                        Title = "",
+                        Content = "Confirm delete?",
+                        PrimaryButtonText = "Delete",
+                        CloseButtonText = "Cancel"
+                    };
+                    cd.XamlRoot = this.Content.XamlRoot;
+                    ContentDialogResult result = await cd.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary) // Run delete query
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    this.ErrorDialog(ex.Message);
+                }
+                TabView_SelectionChanged(null, null); // Populate visible datagrid
+            }
+            else
+            {
+                this.ErrorDialog("No row selected.");
+            }
+        }
+
+        private void clubListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            commonSplitButton.Content = clubListBox.SelectedItem.ToString();
+        }
+
+        private void advisorButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (clubListBox.SelectedItem != null)
+            {
+                commonTextBlock.Text = clubListBox.SelectedItem.ToString() + " Advisor";
+                int index = clubListBox.SelectedIndex + 1;
+
+                MySqlCommand cmd = new MySqlCommand("select_advisor", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new MySqlParameter("new_org_id", index));
+
+                RunStoredProcedure(cmd, commonDataGrid);
+            }
+            else
+            {
+                this.ErrorDialog("No club selected.");
+            }
+        }
+
+        private void rosterButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (clubListBox.SelectedItem != null)
+            {
+                commonTextBlock.Text = clubListBox.SelectedItem.ToString() + " Roster";
+                int index = clubListBox.SelectedIndex + 1;
+
+                MySqlCommand cmd = new MySqlCommand("select_roster", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new MySqlParameter("new_org_id", index));
+
+                RunStoredProcedure(cmd, commonDataGrid);
+            }
+            else
+            {
+                this.ErrorDialog("No club selected.");
+            }
+        }
+
+        private void projectButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (clubListBox.SelectedItem != null)
+            {
+                commonTextBlock.Text = clubListBox.SelectedItem.ToString() + " Projects";
+                int index = clubListBox.SelectedIndex + 1;
+
+                MySqlCommand cmd = new MySqlCommand("select_project", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new MySqlParameter("new_org_id", index));
+
+                RunStoredProcedure(cmd, commonDataGrid);
+            }
+            else
+            {
+                this.ErrorDialog("No club selected.");
+            }
+        }
+
+        private void budgetButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (clubListBox.SelectedItem != null)
+            {
+                commonTextBlock.Text = clubListBox.SelectedItem.ToString() + " Budget";
+                int index = clubListBox.SelectedIndex + 1;
+
+                MySqlCommand cmd = new MySqlCommand("select_budget", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new MySqlParameter("new_org_id", index));
+
+                RunStoredProcedure(cmd, commonDataGrid);
+            }
+            else
+            {
+                this.ErrorDialog("No club selected.");
+            }
+        }
+
+        private void eventButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (clubListBox.SelectedItem != null)
+            {
+                commonTextBlock.Text = clubListBox.SelectedItem.ToString() + " Events";
+                int index = clubListBox.SelectedIndex + 1;
+
+                MySqlCommand cmd = new MySqlCommand("select_event", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new MySqlParameter("new_org_id", index));
+
+                RunStoredProcedure(cmd, commonDataGrid);
+            }
+            else
+            {
+                this.ErrorDialog("No club selected.");
+            }
+        }
+    }
+}

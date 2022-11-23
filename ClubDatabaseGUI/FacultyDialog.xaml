@@ -1,0 +1,29 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<ContentDialog
+    x:Class="ClubDatabaseGUI.FacultyDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ClubDatabaseGUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <RelativePanel>
+        <TextBlock x:Name="fFNameTextBlock" Text="FName: " Margin="20"/>
+        <TextBox x:Name="fFNameTextBox" Width="200" Margin="17,0,0,0" RelativePanel.RightOf="fFNameTextBlock" RelativePanel.AlignVerticalCenterWith="fFNameTextBlock" />
+        <TextBlock x:Name="fLNameTextBlock" Text="LName: " Margin="20,0,0,0" RelativePanel.Below="fFNameTextBlock" />
+        <TextBox x:Name="fLNameTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fFNameTextBox" RelativePanel.AlignVerticalCenterWith="fLNameTextBlock" />
+        <TextBlock x:Name="fEagleIdTextBlock" Text="EagleID: " Margin="20" RelativePanel.Below="fLNameTextBlock" />
+        <TextBox x:Name="fEagleIdTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fLNameTextBox" RelativePanel.AlignVerticalCenterWith="fEagleIdTextBlock" />
+        <TextBlock x:Name="fDeptTextBlock" Text="Dept: " Margin="20,0,0,0" RelativePanel.Below="fEagleIdTextBlock" />
+        <TextBox x:Name="fDeptTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fEagleIdTextBox" RelativePanel.AlignVerticalCenterWith="fDeptTextBlock" />
+        <TextBlock x:Name="fPhoneTextBlock" Text="Phone: " Margin="20" RelativePanel.Below="fDeptTextBlock" />
+        <TextBox x:Name="fPhoneTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fDeptTextBox" RelativePanel.AlignVerticalCenterWith="fPhoneTextBlock" />
+        <TextBlock x:Name="fOfficeTextBlock" Text="Office: " Margin="20,0,0,0" RelativePanel.Below="fPhoneTextBlock" />
+        <TextBox x:Name="fOfficeTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fPhoneTextBox" RelativePanel.AlignVerticalCenterWith="fOfficeTextBlock" />
+        <TextBlock x:Name="fEmailTextBlock" Text="Email: " Margin="20" RelativePanel.Below="fOfficeTextBlock" />
+        <TextBox x:Name="fEmailTextBox" Width="200" Margin="17,0,0,0" RelativePanel.AlignHorizontalCenterWith="fOfficeTextBox" RelativePanel.AlignVerticalCenterWith="fEmailTextBlock" />
+    </RelativePanel>
+</ContentDialog>
