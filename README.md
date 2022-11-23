@@ -3,7 +3,7 @@ This GUI was created for CSCI 3432 Database Systems. It connects to a MySQL inst
 
 When the application is started, all buttons are disabled except the login button. 
 
-(https://github.com/howardks/DatabaseGUI/blob/master/Screenshots/1.png?raw=true)
+!(https://github.com/howardks/DatabaseGUI/blob/master/Screenshots/1.png?raw=true)
 
 Upon clicking the login button, a flyout window is displayed where they can enter their username and password. Upon pressing enter or clicking ‘login’ in the flyout window, the information in both username and password text fields disappears to improve security. 
 
