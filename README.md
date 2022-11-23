@@ -49,7 +49,7 @@ Below, the user has selected ‘Association for Computing Machinery’ in the dr
 
 ![12.png](https://github.com/howardks/DatabaseGUI/blob/master/Screenshots/12.png?raw=true)
 
-Below, the user has selected ‘Association for Computing Machinery’ and clicked the ‘Org Roster’ button. ‘Org Roster’ provides data from the CLUB and STUDENT tables. 
+Below, the user has selected ‘American Socienty of Mechanical Engineering’ and clicked the ‘Org Roster’ button. ‘Org Roster’ provides data from the CLUB and STUDENT tables. 
 
 ![13.png](https://github.com/howardks/DatabaseGUI/blob/master/Screenshots/13.png?raw=true)
 
