@@ -84,6 +84,7 @@ Below, a user attempts to add a row with a null primary key to the FACULTY table
 ![22.png](https://github.com/howardks/DatabaseGUI/blob/master/Screenshots/22.png?raw=true)
 
 Add, Modify, Delete, and Search functionality exists for all tables on their respective tab. Each time a tab is selected, the data for that tab is populated. 
+
 CLUB tab:
 
 ![23.png](https://github.com/howardks/DatabaseGUI/blob/master/Screenshots/23.png?raw=true)
