@@ -1,11 +1,17 @@
 # DatabaseGUI
-This GUI was created for CSCI 3432 Database Systems. It connects to a MySQL instance hosted on AWS and retrieves data regarding student organizations. In order to run this solution, the nuget packages "MySQL.Data" and "CommunityToolkit.WinUI.UI.Controls.DataGrid" must be installed. Screenshots have not been added to this readme yet. 
+This GUI was created for CSCI 3432 Database Systems. It connects to a MySQL instance hosted on AWS and retrieves data regarding student organizations. In order to run this solution, the nuget packages "MySQL.Data" and "CommunityToolkit.WinUI.UI.Controls.DataGrid" must be installed. 
 
 When the application is started, all buttons are disabled except the login button. 
 
+(https://github.com/howardks/DatabaseGUI/blob/master/Screenshots/1.png?raw=true)
+
 Upon clicking the login button, a flyout window is displayed where they can enter their username and password. Upon pressing enter or clicking ‘login’ in the flyout window, the information in both username and password text fields disappears to improve security. 
 
+(https://github.com/howardks/DatabaseGUI/blob/master/Screenshots/2.png?raw=true)
+
 Once the user is successfully logged in, the login button is disabled, the table on the currently selected tab is populated with the appropriate data, and all other buttons and textfields are enabled. Each tab has buttons for ‘add’, ‘modify’, and ‘delete’, as well as a search feature that allows the user to search by individual or multiple fields. 
+
+(https://github.com/howardks/DatabaseGUI/blob/master/Screenshots/3.png?raw=true)
 
 The ‘add’ button displays a content dialog window that allows the user to input data for each field. This data is then used to add a row to the table through the use of stored procedures. 
 
