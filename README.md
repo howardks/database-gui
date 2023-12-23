@@ -1,4 +1,4 @@
-# DatabaseGUI
+# Database GUI
 This GUI was created for CSCI 3432 Database Systems. It connects to a MySQL instance hosted on AWS and retrieves data regarding student organizations. The data in these tables is fictional. In order to run this solution, the nuget packages "MySQL.Data" and "CommunityToolkit.WinUI.UI.Controls.DataGrid" must be installed. 
 
 When the application is started, all buttons are disabled except the login button. 
